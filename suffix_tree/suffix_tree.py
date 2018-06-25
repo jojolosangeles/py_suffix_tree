@@ -1,3 +1,7 @@
+from suffix_tree.node import Node
+from suffix_tree.tree_location import TreeLocation
+
+
 class DataStore:
     """Stores values as they are encountered, provides access to previous values"""
     def __init__(self):
@@ -14,47 +18,6 @@ class DataStore:
 
     def value_at(self, offset):
         return self.values[offset]
-
-
-class Node:
-    UNDEFINED_OFFSET = -1
-
-    """Node represents an offset in a sequence of values."""
-    def __init__(self, incoming_edge_start_offset, incoming_edge_end_offset, children, suffix_link=None):
-        self.incoming_edge_start_offset = incoming_edge_start_offset
-        self.incoming_edge_end_offset = incoming_edge_end_offset
-        self.children = children
-        self.suffix_link = suffix_link
-
-    def is_root(self):
-        return self.incoming_edge_start_offset == Node.UNDEFINED_OFFSET and \
-               self.incoming_edge_end_offset == Node.UNDEFINED_OFFSET and \
-               self.suffix_link == self
-
-    def is_internal(self):
-        return self.incoming_edge_start_offset >= 0 and \
-               self.incoming_edge_end_offset >= 0 and \
-               len(self.children) > 0
-
-    def is_leaf(self):
-        return len(self.children) == 0 and \
-               self.incoming_edge_start_offset >= 0 and \
-               self.incoming_edge_end_offset == Node.UNDEFINED_OFFSET
-
-    @property
-    def incoming_edge_length(self):
-        return self.incoming_edge_end_offset - self.incoming_edge_start_offset + 1
-
-
-class RootNode(Node):
-    def __init__(self):
-        super().__init__(-1, -1, {}, self)
-
-
-class LeafNode(Node):
-    def __init__(self, incoming_edge_start_offset, suffix_offset):
-        super().__init__(incoming_edge_start_offset, -1, {})
-        self.suffix_offset = suffix_offset
 
 
 class NodeStr:
@@ -100,90 +63,6 @@ class NodeStr:
                 self.indent(strings, child.children, "  " + prefix)
         return "\n".join(strings)
 
-
-class Location:
-    """A location is a specific value offset within a sequence.
-
-    This could be a Node's value_offset, or it could be an offset
-    in a Node's incoming edge."""
-    def __init__(self, node):
-        self.node = node
-        self.data_source_value_offset = -1
-        self.node_needing_suffix_link = None
-
-    @property
-    def data_source_value_offset(self):
-        return self._data_source_value_offset
-
-    def update_node_needing_suffix_link(self, new_node):
-        if self.node_needing_suffix_link != None:
-            self.node_needing_suffix_link.suffix_link = new_node
-        self.node_needing_suffix_link = new_node
-
-    def set_suffix_link(self):
-        if self.node_needing_suffix_link != None and self.on_node:
-            self.node_needing_suffix_link.suffix_link = self.node
-            self.node_needing_suffix_link = None
-
-    @data_source_value_offset.setter
-    def data_source_value_offset(self, data_source_value_offset):
-        self.on_node = (self.node.incoming_edge_end_offset == data_source_value_offset)
-        self._data_source_value_offset = data_source_value_offset
-
-    def __repr__(self):
-        if self.on_node:
-            return "location: {!r}".format(self.node)
-        else:
-            return "location: {!r}[{}]".format(self.node, self.data_source_value_offset)
-
-class NodeFactory:
-    def __init__(self):
-        self.suffix_offset = 0
-
-    def add_leaf(self, node, value, offset):
-        leaf = LeafNode(offset, self.suffix_offset)
-        self.suffix_offset += 1
-        self.add_child(node, value, leaf)
-        return leaf
-
-    def add_child(self, node, value, child):
-        node.children[value] = child
-        child.parent = node
-
-    def split_edge(self, value, node, value2, end_offset):
-        new_node = Node(node.incoming_edge_start_offset, end_offset, {}, None)
-        node.incoming_edge_start_offset = end_offset + 1
-        self.add_child(node.parent, value, new_node)
-        self.add_child(new_node, value2, node)
-        return new_node
-
-    def new_root(self):
-        return RootNode()
-
-class NodeFactoryWithId(NodeFactory):
-    def __init__(self):
-        self.node_id = 0
-        self.suffix_offset = 0
-
-    def next_node_id(self):
-        result = self.node_id
-        self.node_id += 1
-        return result
-
-    def add_leaf(self, node, value, offset):
-        leaf = super().add_leaf(node, value, offset)
-        leaf.node_id = self.next_node_id()
-
-    def split_edge(self, value, node, value2, end_offset):
-        new_node = super().split_edge(value, node, value2, end_offset)
-        new_node.node_id = self.next_node_id()
-        return new_node
-
-    def new_root(self):
-        result = super().new_root()
-        result.node_id = self.next_node_id()
-        return result
-
 class TreeBuilder:
     def __init__(self, data_generator, node_factory, terminal_value=-1):
         self.data_generator = data_generator
@@ -191,8 +70,8 @@ class TreeBuilder:
         self.terminal_value = terminal_value
         self.next_offset = 0
         self.data_store = DataStore()
-        self.root = node_factory.new_root()
-        self.location = Location(self.root)
+        self.root = node_factory.create_root()
+        self.location = TreeLocation(self.root)
 
     def next(self):
         value = next(self.data_generator)
@@ -225,14 +104,14 @@ class TreeBuilder:
                 self.location.data_source_value_offset = self.location.node.incoming_edge_start_offset
                 return False
             else:
-                self.node_factory.add_leaf(self.location.node, value, offset)
+                self.node_factory.create_leaf(self.location.node, value, offset)
                 result = self.traverse_to_next_suffix()
                 return result
         elif value == self.data_store.value_at(self.location.data_source_value_offset + 1):
             self.location.data_source_value_offset += 1
             return False
         else:
-            self.location.node = self.node_factory.split_edge(
+            self.location.node = self.node_factory.create_internal(
                 self.data_store.value_at(self.location.node.incoming_edge_start_offset),
                 self.location.node,
                 self.data_store.value_at(self.location.data_source_value_offset + 1),

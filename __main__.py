@@ -1,6 +1,8 @@
 """Executable suffix tree"""
 import sys
-from suffix_tree.suffix_tree import TreeBuilder, NodeStr, NodeFactoryWithId
+
+from suffix_tree.node import NodeFactoryWithId
+from suffix_tree.suffix_tree import TreeBuilder, NodeStr
 
 builder = TreeBuilder((c for c in "mississippi"), NodeFactoryWithId())
 
