@@ -1,4 +1,3 @@
-from suffix_tree.node import Node
 from suffix_tree.tree_location import TreeLocation
 
 
@@ -73,7 +72,7 @@ class TreeBuilder:
         self.root = node_factory.create_root()
         self.location = TreeLocation(self.root)
 
-    def next(self):
+    def get_next_value_and_offset(self):
         value = next(self.data_generator)
         offset = self.next_offset
         self.data_store.add(value)
@@ -85,13 +84,12 @@ class TreeBuilder:
         offset = self.next_offset
         self.process_value(value, offset)
 
-    def run_steps(self):
+    def process_all_values(self):
         try:
             while True:
-                value,offset = self.next()
-                self.runstep(value, offset)
+                self.process_value(*self.get_next_value_and_offset())
         except StopIteration:
-            pass
+            self.finish()
 
     def process_value(self, value, offset):
         while self.process_value_at_location(value, offset):

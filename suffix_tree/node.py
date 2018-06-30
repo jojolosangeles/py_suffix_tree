@@ -65,8 +65,8 @@ class NodeFactory:
 
 class NodeFactoryWithId(NodeFactory):
     def __init__(self):
+        super().__init__()
         self.node_id = 0
-        self.suffix_offset = 0
 
     def next_node_id(self):
         result = self.node_id

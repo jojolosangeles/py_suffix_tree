@@ -82,7 +82,7 @@ verifier.verify()
 verifier.verifyLocation(None, True, -1)
 
 print("..add 'm'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -91,7 +91,7 @@ verifier.verify()
 verifier.verifyLocation(None, True, -1)
 
 print("..add 'i'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -100,7 +100,7 @@ verifier.verify()
 verifier.verifyLocation(None, True, -1)
 
 print("..add 's'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -109,7 +109,7 @@ verifier.verify()
 verifier.verifyLocation(None, True, -1)
 
 print("..add 's'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -117,7 +117,7 @@ verifier.verify()
 verifier.verifyLocation("s", False, 2)
 
 print("..add 'i'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == True)
 
@@ -141,7 +141,7 @@ verifier.verify()
 verifier.verifyLocation("i", False, 1)
 
 print("..add 's'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -149,7 +149,7 @@ verifier.verify()
 verifier.verifyLocation("i", False, 2)
 
 print("..add 's'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -157,7 +157,7 @@ verifier.verify()
 verifier.verifyLocation("i", False, 3)
 
 print("..add 'i'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -165,7 +165,7 @@ verifier.verify()
 verifier.verifyLocation("i", False, 4)
 
 print("..add 'p'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == True)
 
@@ -236,7 +236,7 @@ verifier.verify()
 verifier.verifyLocation(None, True, -1)
 
 print("..add 'p'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == False)
 
@@ -244,7 +244,7 @@ verifier.verify()
 verifier.verifyLocation("p", False, 8)
 
 print("..add 'i'")
-value,offset = builder.next()
+value,offset = builder.get_next_value_and_offset()
 result = builder.process_value_at_location(value, offset)
 assert(result == True)
 
