@@ -1,9 +1,7 @@
 from suffix_tree.node import Node
 
 class TreeLocation:
-    """A location within a suffix tree, either on a node or on an edge,
-    as well as a specific location within the sequence of values used to create
-    the suffix tree."""
+    """A location within a suffix tree, either on a node or on an edge."""
     def __init__(self, node):
         self.node = node
         self.data_source_value_offset = Node.UNDEFINED_OFFSET

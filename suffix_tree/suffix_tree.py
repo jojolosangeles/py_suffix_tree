@@ -1,6 +1,7 @@
 from suffix_tree.suffix_linker import SuffixLinker
+from suffix_tree.traverser import Traverser
 from suffix_tree.tree_location import TreeLocation
-
+from itertools import count
 
 class DataStore:
     """Stores values as they are encountered, provides access to previous values"""
@@ -63,35 +64,35 @@ class NodeStr:
                 self.indent(strings, child.children, "  " + prefix)
         return "\n".join(strings)
 
+
 class TreeBuilder:
-    def __init__(self, data_generator, node_factory, terminal_value=-1):
-        self.data_generator = data_generator
+    def __init__(self, datasource, node_factory, terminal_value=-1):
+        self.data_generator = ((val,offset) for (val,offset) in zip(datasource,count()))
         self.node_factory = node_factory
         self.terminal_value = terminal_value
-        self.next_offset = 0
         self.data_store = DataStore()
         self.root = node_factory.create_root()
         self.location = TreeLocation(self.root)
         self.suffix_linker = SuffixLinker();
-
-    def get_next_value_and_offset(self):
-        value = next(self.data_generator)
-        offset = self.next_offset
-        self.data_store.add(value)
-        self.next_offset += 1
-        return value,offset
-
-    def finish(self):
-        value = self.terminal_value
-        offset = self.next_offset
-        self.process_value(value, offset)
+        self.traverser = Traverser(self.data_store)
 
     def process_all_values(self):
+        """Create suffix tree from values in the data source."""
         try:
             while True:
                 self.process_value(*self.get_next_value_and_offset())
         except StopIteration:
             self.finish()
+
+    def get_next_value_and_offset(self):
+        value,offset = next(self.data_generator)
+        self.data_store.add(value)
+        self.last_offset = offset
+        return value,offset
+
+    def finish(self):
+        value = self.terminal_value
+        self.process_value(value, self.last_offset + 1)
 
     def process_value(self, value, offset):
         while self.process_value_at_location(value, offset):
@@ -103,26 +104,18 @@ class TreeBuilder:
         Return:
             True if there is more processing to be done
             """
-        if self.traverse_to_value(value):
+        self.location, result = self.traverser.traverse_by_value(self.location, value)
+        if result:
             return False
         else:
             return self.insert_value(value, offset)
 
-    def traverse_to_value(self, value):
-        if self.location.on_node:
-            if value in self.location.node.children:
-                self.location.node = self.location.node.children[value]
-                self.location.data_source_value_offset = self.location.node.incoming_edge_start_offset
-                return True
-        elif value == self.data_store.value_at(self.location.data_source_value_offset + 1):
-            self.location.data_source_value_offset += 1
-            return True
-        return False
-
     def insert_value(self, value, offset):
         if self.location.on_node:
             self.node_factory.create_leaf(self.location.node, value, offset)
-            result = self.traverse_to_next_suffix()
+            self.location, result = self.traverser.traverse_to_next_suffix(self.location)
+            if result and self.location.on_node:
+                self.suffix_linker.link_to(self.location.node)
             return result
         else:
             self.location.node = self.node_factory.create_internal(
@@ -133,49 +126,6 @@ class TreeBuilder:
             self.suffix_linker.needs_suffix_link(self.location.node)
             self.location.on_node = True
             return True
-
-    def traverse_to_next_suffix(self):
-        """
-        Traverse to the suffix for this node.
-
-        Return:
-                True if the location changed, otherwise False
-        """
-        next_node = self.location.node.suffix_link
-        if next_node == self.location.node:
-            return False
-        elif next_node == None:
-            # we have no suffix link, traverse up
-            amount_to_traverse = self.location.node.incoming_edge_length
-            parent = self.location.node.parent
-            value_offset = self.location.node.incoming_edge_start_offset
-            # the root suffix link is to itself, so we have to manually skip first character
-            if parent.suffix_link == parent:
-                value_offset += 1
-                amount_to_traverse -= 1
-            start_node = parent.suffix_link
-            self.traverse_down(start_node,
-                               value_offset,
-                               amount_to_traverse)
-        else:
-            self.location.node = next_node
-
-        if self.location.on_node:
-            self.suffix_linker.link_to(self.location.node)
-        return True
-
-    def traverse_down(self, node, offset, amount_to_traverse):
-        if amount_to_traverse == 0:
-            self.location.node = node
-            self.location.data_source_value_offset = node.incoming_edge_end_offset
-        else:
-            self.location.node = node.children[self.data_store.value_at(offset)]
-            if self.location.node.is_leaf() or self.location.node.incoming_edge_length >= amount_to_traverse:
-                self.location.data_source_value_offset = self.location.node.incoming_edge_start_offset + amount_to_traverse - 1
-            else:
-                edge_length = self.location.node.incoming_edge_length
-                amount_to_traverse -= edge_length
-                return self.traverse_down(self.location.node, offset + edge_length, amount_to_traverse)
 
     def __repr__(self):
         return "{!r}".format(self.location)

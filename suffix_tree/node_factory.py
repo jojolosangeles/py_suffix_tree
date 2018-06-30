@@ -1,6 +1,5 @@
 from suffix_tree.node import RootNode, LeafNode, Node
 
-
 class NodeFactory:
     """Create basic nodes"""
     def __init__(self):
