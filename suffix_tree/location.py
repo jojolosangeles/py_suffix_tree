@@ -1,17 +1,17 @@
 from suffix_tree.node import Node
 
-class TreeLocation:
+class Location:
     """A location within a suffix tree, either on a node or on an edge."""
-    def __init__(self, node):
+    def __init__(self, node, offset = Node.UNDEFINED_OFFSET):
         self.node = node
-        self.data_source_value_offset = Node.UNDEFINED_OFFSET
+        self.data_offset = offset
 
     @property
-    def data_source_value_offset(self):
+    def data_offset(self):
         return self._data_source_value_offset
 
-    @data_source_value_offset.setter
-    def data_source_value_offset(self, data_source_value_offset):
+    @data_offset.setter
+    def data_offset(self, data_source_value_offset):
         self.on_node = (self.node.incoming_edge_end_offset == data_source_value_offset)
         self._data_source_value_offset = data_source_value_offset
 
@@ -19,5 +19,5 @@ class TreeLocation:
         if self.on_node:
             return "location: {!r}".format(self.node)
         else:
-            return "location: {!r}[{}]".format(self.node, self.data_source_value_offset)
+            return "location: {!r}[{}]".format(self.node, self.data_offset)
 

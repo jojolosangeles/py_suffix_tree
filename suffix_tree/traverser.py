@@ -2,11 +2,8 @@ class Traverser:
     def __init__(self, data_store):
         self.data_store = data_store
 
-    """Given a location, moves to a new location."""
     def traverse_by_value(self, location, value):
-        """Traverses from current location based on a given value.
-
-        This implementation modifies the location.
+        """Given a location, moves to a new location.
 
         Returns:
             (new location, True) if the traversal succeeds
@@ -15,10 +12,10 @@ class Traverser:
         if location.on_node:
             if value in location.node.children:
                 location.node = location.node.children[value]
-                location.data_source_value_offset = location.node.incoming_edge_start_offset
+                location.data_offset = location.node.incoming_edge_start_offset
                 return (location, True)
-        elif value == self.data_store.value_at(location.data_source_value_offset + 1):
-            location.data_source_value_offset += 1
+        elif value == self.data_store.value_at(location.data_offset + 1):
+            location.data_offset += 1
             return (location, True)
         return (location, False)
 
@@ -53,11 +50,11 @@ class Traverser:
     def traverse_down(self, location, node, offset, amount_to_traverse):
         if amount_to_traverse == 0:
             location.node = node
-            location.data_source_value_offset = node.incoming_edge_end_offset
+            location.data_offset = node.incoming_edge_end_offset
         else:
             location.node = node.children[self.data_store.value_at(offset)]
             if location.node.is_leaf() or location.node.incoming_edge_length >= amount_to_traverse:
-                location.data_source_value_offset = location.node.incoming_edge_start_offset + amount_to_traverse - 1
+                location.data_offset = location.node.incoming_edge_start_offset + amount_to_traverse - 1
             else:
                 edge_length = location.node.incoming_edge_length
                 amount_to_traverse -= edge_length

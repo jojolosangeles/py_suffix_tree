@@ -3,7 +3,8 @@ class Node:
     UNDEFINED_OFFSET = -1
 
     """Node represents an offset in a sequence of values."""
-    def __init__(self, incoming_edge_start_offset, incoming_edge_end_offset, children, suffix_link=None):
+    def __init__(self, id, incoming_edge_start_offset, incoming_edge_end_offset, children, suffix_link=None):
+        self.node_id = id
         self.incoming_edge_start_offset = incoming_edge_start_offset
         self.incoming_edge_end_offset = incoming_edge_end_offset
         self.children = children
@@ -30,12 +31,12 @@ class Node:
 
 
 class RootNode(Node):
-    def __init__(self):
-        super().__init__(Node.UNDEFINED_OFFSET, Node.UNDEFINED_OFFSET, {}, self)
+    def __init__(self, id):
+        super().__init__(id, Node.UNDEFINED_OFFSET, Node.UNDEFINED_OFFSET, {}, self)
 
 
 class LeafNode(Node):
-    def __init__(self, incoming_edge_start_offset, suffix_offset):
-        super().__init__(incoming_edge_start_offset, Node.UNDEFINED_OFFSET, {})
+    def __init__(self, id, incoming_edge_start_offset, suffix_offset):
+        super().__init__(id, incoming_edge_start_offset, Node.UNDEFINED_OFFSET, {})
         self.suffix_offset = suffix_offset
 

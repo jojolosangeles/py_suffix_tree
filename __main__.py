@@ -1,10 +1,12 @@
 """Executable suffix tree"""
 import sys
 
-from suffix_tree.node_factory import NodeFactoryWithId
+from suffix_tree.node_factory import NodeFactory
+from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder, NodeStr
 
-builder = TreeBuilder((c for c in "mississippi"), NodeFactoryWithId())
+suffix_linker = SuffixLinker()
+builder = TreeBuilder((c for c in "mississippi"), NodeFactory(suffix_linker))
 
 """
 Build a tree from sequence 'mississippi'
@@ -56,7 +58,7 @@ class Verifier:
         node = self.traverse_to(traversal)
         self.expect_equal("loc node after '{}'".format(traversal), traversal, node, self.location.node)
         self.expect_equal("loc on_node after '{}'".format(traversal), traversal, on_node, self.location.on_node)
-        self.expect_equal("loc value_offset after '{}'".format(traversal), traversal, value_offset, self.location.data_source_value_offset)
+        self.expect_equal("loc value_offset after '{}'".format(traversal), traversal, value_offset, self.location.data_offset)
 
 def edge_with_loc(start_offset, value_offset, str):
     str_offset = value_offset - start_offset
@@ -69,7 +71,7 @@ def size_of(node):
 
 def printTree(root):
     print(nodestr.tree_str(root))
-    print("Location: {}, {}".format(nodestr.node_str(location.node), edge_with_loc(location.node.incoming_edge_start_offset, location.data_source_value_offset, nodestr.edge_str(location.node))))
+    print("Location: {}, {}".format(nodestr.node_str(location.node), edge_with_loc(location.node.incoming_edge_start_offset, location.data_offset, nodestr.edge_str(location.node))))
     print("tree size={}".format(size_of(root)))
 
 print("START TEST")

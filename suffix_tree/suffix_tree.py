@@ -1,6 +1,6 @@
-from suffix_tree.suffix_linker import SuffixLinker
+from suffix_tree.modifier import Modifier
 from suffix_tree.traverser import Traverser
-from suffix_tree.tree_location import TreeLocation
+from suffix_tree.location import Location
 from itertools import count
 
 class DataStore:
@@ -72,9 +72,9 @@ class TreeBuilder:
         self.terminal_value = terminal_value
         self.data_store = DataStore()
         self.root = node_factory.create_root()
-        self.location = TreeLocation(self.root)
-        self.suffix_linker = SuffixLinker();
+        self.location = Location(self.root)
         self.traverser = Traverser(self.data_store)
+        self.modifier = Modifier(node_factory, self.traverser, self.data_store, node_factory.suffix_linker)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
@@ -108,24 +108,7 @@ class TreeBuilder:
         if result:
             return False
         else:
-            return self.insert_value(value, offset)
-
-    def insert_value(self, value, offset):
-        if self.location.on_node:
-            self.node_factory.create_leaf(self.location.node, value, offset)
-            self.location, result = self.traverser.traverse_to_next_suffix(self.location)
-            if result and self.location.on_node:
-                self.suffix_linker.link_to(self.location.node)
-            return result
-        else:
-            self.location.node = self.node_factory.create_internal(
-                self.data_store.value_at(self.location.node.incoming_edge_start_offset),
-                self.location.node,
-                self.data_store.value_at(self.location.data_source_value_offset + 1),
-                self.location.data_source_value_offset)
-            self.suffix_linker.needs_suffix_link(self.location.node)
-            self.location.on_node = True
-            return True
+            return self.modifier.insert_value(self.location, value, offset)
 
     def __repr__(self):
         return "{!r}".format(self.location)
