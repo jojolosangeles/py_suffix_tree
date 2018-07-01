@@ -1,6 +1,7 @@
-from suffix_tree.traverser import Traverser
+from suffix_tree.relocate import Relocate
 from suffix_tree.location import Location
 from itertools import count
+
 
 class DataStore:
     """Stores values as they are encountered, provides access to previous values"""
@@ -71,8 +72,8 @@ class TreeBuilder:
         self.terminal_value = terminal_value
         self.data_store = DataStore()
         self.root = node_factory.create_root()
-        self.location = Location(self.root)
-        self.traverser = Traverser(self.data_store)
+        self.location = Location(self.root, Location.ON_NODE)
+        self.traverser = Relocate(self.data_store)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
@@ -102,12 +103,12 @@ class TreeBuilder:
         Return:
             True if there is more processing to be done
             """
-        self.location, result = self.traverser.traverse_by_value(self.location, value)
+        self.location, result = self.traverser.follow_value(self.location, value)
         if result:
             return False
         elif self.location.on_node:
             self.node_factory.create_leaf(self.location.node, value, offset)
-            self.location, result = self.traverser.traverse_to_next_suffix(self.location)
+            self.location, result = self.traverser.go_to_suffix(self.location)
             if self.location.on_node:
                 self.node_factory.suffix_linker.link_to(self.location.node)
             return result

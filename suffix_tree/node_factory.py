@@ -1,6 +1,7 @@
 from suffix_tree.node import RootNode, LeafNode, Node
 from itertools import count
 
+
 class NodeFactory:
     def __init__(self, suffix_linker):
         self.suffix_generator = (i for i in count())
