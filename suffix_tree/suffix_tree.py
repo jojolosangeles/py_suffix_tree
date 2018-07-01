@@ -1,5 +1,5 @@
 from suffix_tree.relocate import Relocate
-from suffix_tree.location import Location
+from suffix_tree.location import Location, LocationFactory
 from itertools import count
 
 
@@ -73,7 +73,7 @@ class TreeBuilder:
         self.data_store = DataStore()
         self.root = node_factory.create_root()
         self.location = Location(self.root, Location.ON_NODE)
-        self.traverser = Relocate(self.data_store)
+        self.relocater = Relocate(self.data_store)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
@@ -103,22 +103,22 @@ class TreeBuilder:
         Return:
             True if there is more processing to be done
             """
-        self.location, result = self.traverser.follow_value(self.location, value)
+        self.location, result = self.relocater.follow_value(self.location, value)
         if result:
             return False
         elif self.location.on_node:
             self.node_factory.create_leaf(self.location.node, value, offset)
-            self.location, result = self.traverser.go_to_suffix(self.location)
+            self.location, result = self.relocater.go_to_suffix(self.location)
             if self.location.on_node:
                 self.node_factory.suffix_linker.link_to(self.location.node)
             return result
         else:
-            node = self.location.node
-            self.location.node = self.node_factory.create_internal(
-                self.data_store.value_at(node.incoming_edge_start_offset),
-                node,
-                self.data_store.value_at(self.location.data_offset + 1),
-                self.location.data_offset)
+            self.location = LocationFactory.create(
+                self.node_factory.create_internal(
+                    self.data_store.value_at(self.location.node.incoming_edge_start_offset),
+                    self.location.node,
+                    self.data_store.value_at(self.location.data_offset + 1),
+                    self.location.data_offset), Location.ON_NODE)
             return True
 
     def __repr__(self):

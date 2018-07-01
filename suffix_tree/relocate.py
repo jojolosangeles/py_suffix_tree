@@ -14,10 +14,10 @@ class Relocate:
         """
         if location.on_node:
             if value in location.node.children:
-                return (LocationFactory.create(location.node.children[value], location.node.incoming_edge_start_offset), True)
+                return LocationFactory.create(location.node.children[value], location.node.incoming_edge_start_offset), True
         elif value == self.data_store.value_at(location.data_offset + 1):
-            return (LocationFactory.next_data_offset(location), True)
-        return (location, False)
+            return LocationFactory.next_data_offset(location), True
+        return location, False
 
     def go_to_suffix(self, location):
         """

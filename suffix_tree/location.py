@@ -11,24 +11,7 @@ class Location:
         elif data_offset == Location.ON_NODE:
             data_offset = node.incoming_edge_end_offset
         self.data_offset = data_offset
-
-    @property
-    def node(self):
-        return self._node
-
-    @node.setter
-    def node(self, new_node):
-        self._node = new_node
-        self.on_node = True
-
-    @property
-    def data_offset(self):
-        return self._data_source_value_offset
-
-    @data_offset.setter
-    def data_offset(self, data_source_value_offset):
-        self.on_node = (self.node.incoming_edge_end_offset == data_source_value_offset)
-        self._data_source_value_offset = data_source_value_offset
+        self.on_node = (self.node.incoming_edge_end_offset == data_offset)
 
     def __repr__(self):
         if self.on_node:
