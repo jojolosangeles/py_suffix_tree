@@ -1,0 +1,63 @@
+
+class DataStore:
+    """Stores values as they are encountered, provides access to previous values"""
+    def __init__(self):
+        self.values = []
+
+    def add(self, value):
+        self.values.append(value)
+
+    def value_str(self, start_offset, end_offset):
+        if end_offset == -1:
+            return ''.join(self.values[start_offset:])
+        else:
+            return ''.join(self.values[start_offset:end_offset + 1])
+
+    def value_at(self, offset):
+        return self.values[offset]
+
+
+
+class NodeStr:
+    """Create string forms of a node or tree.
+
+    Not using __repr__ or __str__ because this nodes only store value offsets,
+    actual values are in DataStore instance"""
+    def __init__(self, data_store):
+        self.data_store = data_store
+
+    def tree_str(self, node):
+        return_strings = [node.__repr__()]
+        return self.indent(return_strings, node.children, "  ")
+
+    def suffix_link_str(self, node):
+        if node.suffix_link == None:
+            return "=> needs suffix link"
+        else:
+            return "=> n{}".format(node.suffix_link.node_id)
+
+    def node_str(self, node):
+        if node.is_leaf():
+            return "({}) Leaf.{} {}, suffix_offset {}".format(
+                node.node_id,
+                node.incoming_edge_start_offset,
+                self.data_store.value_str(node.incoming_edge_start_offset, node.incoming_edge_end_offset),
+                node.suffix_offset)
+        elif node.is_root():
+            return "({}) Root".format(node.node_id)
+        else:
+            return "({}) Internal.{}.{} {} {}".format(node.node_id, node.incoming_edge_start_offset,
+                                                      node.incoming_edge_end_offset,
+                                                      self.edge_str(node),
+                                                      self.suffix_link_str(node))
+
+    def edge_str(self, node):
+        return self.data_store.value_str(node.incoming_edge_start_offset, node.incoming_edge_end_offset)
+
+    def indent(self, strings, children, prefix):
+        if children != None:
+            for child in children.values():
+                strings.append(prefix + self.node_str(child))
+                self.indent(strings, child.children, "  " + prefix)
+        return "\n".join(strings)
+

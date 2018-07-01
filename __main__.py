@@ -1,9 +1,11 @@
 """Executable suffix tree"""
 import sys
 
+from suffix_tree.data_store import NodeStr
+from suffix_tree.location import Location
 from suffix_tree.node_factory import NodeFactory
 from suffix_tree.suffix_linker import SuffixLinker
-from suffix_tree.suffix_tree import TreeBuilder, NodeStr
+from suffix_tree.suffix_tree import TreeBuilder
 
 suffix_linker = SuffixLinker()
 builder = TreeBuilder((c for c in "mississippi"), NodeFactory(suffix_linker))
@@ -20,6 +22,7 @@ Root has values (-1,-1) for this range.
 Leaf has values (incoming_edge_start_offset, -1) for this range.
 
 """
+
 
 class Verifier:
     def __init__(self, root):
@@ -75,142 +78,143 @@ def printTree(root, location):
 
 print("START TEST")
 root = builder.root
+location = Location(root, Location.ON_NODE)
 
 verifier = Verifier(root)
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
 print("..add 'm'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.set_state("m", (0, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
 print("..add 'i'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.set_state("i", (1, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
 print("..add 's'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.set_state("s", (2, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
 print("..add 's'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.verify()
-verifier.verifyLocation(builder.location, "s", False, 2)
+verifier.verifyLocation(location, "s", False, 2)
 
 print("..add 'i'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("s", (2, 2))
 verifier.set_state("ss", (3, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "s", True, 2)
+verifier.verifyLocation(location, "s", True, 2)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 
 verifier.set_state("si", (4, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", False, 1)
+verifier.verifyLocation(location, "i", False, 1)
 
 print("..add 's'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", False, 2)
+verifier.verifyLocation(location, "i", False, 2)
 
 print("..add 's'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", False, 3)
+verifier.verifyLocation(location, "i", False, 3)
 
 print("..add 'i'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", False, 4)
+verifier.verifyLocation(location, "i", False, 4)
 
 print("..add 'p'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("i", (1, 4))
 verifier.set_state("is", (5, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", True, 4)
+verifier.verifyLocation(location, "i", True, 4)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("ip", (8, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "ss", False, 4)
+verifier.verifyLocation(location, "ss", False, 4)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("ss", (3, 4))
 verifier.set_state("sss", (5, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "ss", True, 4)
+verifier.verifyLocation(location, "ss", True, 4)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("ssp", (8, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "si", False, 4)
+verifier.verifyLocation(location, "si", False, 4)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("si", (4, 4))
 verifier.set_state("sis", (5, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "si", True, 4)
+verifier.verifyLocation(location, "si", True, 4)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("sip", (8, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", False, 1)
+verifier.verifyLocation(location, "i", False, 1)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.replace_state("is", "iss")
@@ -218,53 +222,53 @@ verifier.replace_state("ip", "isp")
 verifier.set_state("i", (1, 1))
 verifier.set_state("is", (2, 4))
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", True, 1)
+verifier.verifyLocation(location, "i", True, 1)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("ip", (8, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.set_state("p", (8, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
 print("..add 'p'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 
 verifier.verify()
-verifier.verifyLocation(builder.location, "p", False, 8)
+verifier.verifyLocation(location, "p", False, 8)
 
 print("..add 'i'")
 value,offset = builder.get_next_value_and_offset()
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("p", (8, 8))
 verifier.set_state("pp", (9, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, "p", True, 8)
+verifier.verifyLocation(location, "p", True, 8)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == True)
 
 verifier.set_state("pi", (10, -1))
 verifier.verify()
-verifier.verifyLocation(builder.location, None, True, -1)
+verifier.verifyLocation(location, None, True, -1)
 
-result = builder.process_value_at_location(value, offset)
+location, result = builder.process_value_at_location(location, value, offset)
 assert(result == False)
 verifier.verify()
-verifier.verifyLocation(builder.location, "i", True, 1)
+verifier.verifyLocation(location, "i", True, 1)
 
-builder.finish()
-printTree(root, builder.location)
+location = builder.finish(location)
+printTree(root, location)
 
 print("END TEST")

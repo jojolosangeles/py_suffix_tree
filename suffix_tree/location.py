@@ -1,3 +1,5 @@
+"""Location within a suffix tree."""
+
 
 class Location:
     ON_INCOMING_EDGE_START = -1
