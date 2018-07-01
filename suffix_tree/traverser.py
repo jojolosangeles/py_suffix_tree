@@ -48,6 +48,10 @@ class Traverser:
         return (location, True)
 
     def traverse_down(self, location, node, offset, amount_to_traverse):
+        """Traverse down a node starting at a given offset in the data
+        source when the path down is assumed to exist.  This allows
+        downward traversal by only checking the first value down.
+        """
         if amount_to_traverse == 0:
             location.node = node
             location.data_offset = node.incoming_edge_end_offset

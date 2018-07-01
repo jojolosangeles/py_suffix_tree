@@ -75,7 +75,6 @@ def printTree(root):
     print("tree size={}".format(size_of(root)))
 
 print("START TEST")
-print("..verify root initial state")
 root = builder.root
 location = builder.location
 

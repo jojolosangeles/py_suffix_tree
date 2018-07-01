@@ -1,4 +1,3 @@
-from suffix_tree.modifier import Modifier
 from suffix_tree.traverser import Traverser
 from suffix_tree.location import Location
 from itertools import count
@@ -74,7 +73,6 @@ class TreeBuilder:
         self.root = node_factory.create_root()
         self.location = Location(self.root)
         self.traverser = Traverser(self.data_store)
-        self.modifier = Modifier(node_factory, self.traverser, self.data_store, node_factory.suffix_linker)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
@@ -107,8 +105,20 @@ class TreeBuilder:
         self.location, result = self.traverser.traverse_by_value(self.location, value)
         if result:
             return False
+        elif self.location.on_node:
+            self.node_factory.create_leaf(self.location.node, value, offset)
+            self.location, result = self.traverser.traverse_to_next_suffix(self.location)
+            if self.location.on_node:
+                self.node_factory.suffix_linker.link_to(self.location.node)
+            return result
         else:
-            return self.modifier.insert_value(self.location, value, offset)
+            node = self.location.node
+            self.location.node = self.node_factory.create_internal(
+                self.data_store.value_at(node.incoming_edge_start_offset),
+                node,
+                self.data_store.value_at(self.location.data_offset + 1),
+                self.location.data_offset)
+            return True
 
     def __repr__(self):
         return "{!r}".format(self.location)

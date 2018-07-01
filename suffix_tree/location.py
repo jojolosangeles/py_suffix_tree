@@ -7,6 +7,15 @@ class Location:
         self.data_offset = offset
 
     @property
+    def node(self):
+        return self._node
+
+    @node.setter
+    def node(self, new_node):
+        self._node = new_node
+        self.on_node = True
+
+    @property
     def data_offset(self):
         return self._data_source_value_offset
 
