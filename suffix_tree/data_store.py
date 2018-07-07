@@ -14,7 +14,11 @@ class DataStore:
             return ''.join(self.values[start_offset:end_offset + 1])
 
     def value_at(self, offset):
-        return self.values[offset]
+        try:
+            return self.values[offset]
+        except IndexError:
+            print("Offset={}, number values={}".format(offset, len(self.values)))
+            return 0
 
 
 

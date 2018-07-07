@@ -8,6 +8,9 @@ class NodeFactory:
         self.id_generator = (i for i in count())
         self.suffix_linker = suffix_linker
 
+    def final_id(self):
+        return next(self.id_generator)
+
     def create_leaf(self, node, value, offset):
         leaf = LeafNode(next(self.id_generator), offset, next(self.suffix_generator))
         self.add_child(node, value, leaf)

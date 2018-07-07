@@ -29,8 +29,9 @@ class Node:
 
     @property
     def incoming_edge_length(self):
+        if self.is_leaf() or self.is_root():
+            return 0
         return self.incoming_edge_end_offset - self.incoming_edge_start_offset + 1
-
 
 class RootNode(Node):
     def __init__(self, id):

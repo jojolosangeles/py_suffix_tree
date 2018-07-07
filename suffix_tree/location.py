@@ -16,10 +16,11 @@ class Location:
         self.on_node = (self.node.incoming_edge_end_offset == data_offset)
 
     def __repr__(self):
-        if self.on_node:
-            return "location: {!r}".format(self.node)
-        else:
-            return "location: {!r}[{}]".format(self.node, self.data_offset)
+        return "node({}), incoming {}-{}, data_offset {}, on_node={}".\
+                format(self.node.node_id,
+                       self.node.incoming_edge_start_offset,
+                       self.node.incoming_edge_end_offset,
+                       self.data_offset, self.on_node)
 
 
 class LocationFactory:

@@ -6,7 +6,8 @@ from itertools import count
 
 class TreeBuilder:
     def __init__(self, datasource, node_factory, terminal_value=-1):
-        self.data_generator = ((val,offset) for (val,offset) in zip(datasource,count()))
+        self.id_count = count()
+        self.data_generator = ((val,offset) for (val,offset) in zip(datasource,self.id_count))
         self.node_factory = node_factory
         self.terminal_value = terminal_value
         self.data_store = DataStore()
@@ -21,6 +22,9 @@ class TreeBuilder:
                 location = self.process_value(location, *self.get_next_value_and_offset())
         except StopIteration:
             self.finish(location)
+
+    def final_id(self):
+        return next(self.id_count)
 
     def get_next_value_and_offset(self):
         value,offset = next(self.data_generator)
@@ -45,15 +49,15 @@ class TreeBuilder:
             (newLocation, True) if there is more processing to be done
             (originalLocation, False) otherwise
         """
-        location, result = self.relocater.follow_value(location, value)
-        if result:
+        location, found_value = self.relocater.follow_value(location, value)
+        if found_value:
             return location, False
         elif location.on_node:
             self.node_factory.create_leaf(location.node, value, offset)
-            location, result = self.relocater.go_to_suffix(location)
+            location, found_value = self.relocater.go_to_suffix(location)
             if location.on_node:
                 self.node_factory.suffix_linker.link_to(location.node)
-            return location, result
+            return location, found_value
         else:
             location = LocationFactory.create(
                 self.node_factory.create_internal(
