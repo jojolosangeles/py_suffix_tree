@@ -17,10 +17,10 @@ class NodeFactory:
         return leaf
 
     def create_internal(self, value, node, value2, end_offset):
-        new_node = Node(next(self.id_generator), node.incoming_edge_start_offset, end_offset, {}, None)
+        new_node = Node(next(self.id_generator), node.incoming_edge_start_offset, end_offset, { value2: node }, None)
         node.incoming_edge_start_offset = end_offset + 1
         self.add_child(node.parent, value, new_node)
-        self.add_child(new_node, value2, node)
+        node.parent = new_node
         self.suffix_linker.needs_suffix_link(new_node)
         return new_node
 

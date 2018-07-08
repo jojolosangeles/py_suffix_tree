@@ -15,7 +15,7 @@ class Relocate:
         if location.on_node:
             if value in location.node.children:
                 dest_node = location.node.children[value]
-                return LocationFactory.create(dest_node, dest_node.incoming_edge_start_offset), True
+                return LocationFactory.create(location, dest_node, dest_node.incoming_edge_start_offset), True
         elif value == self.data_store.value_at(location.data_offset + 1):
             return LocationFactory.next_data_offset(location), True
         return location, False
@@ -31,13 +31,13 @@ class Relocate:
         if location.node.is_root():
             return location, False
 
-        if location.node.suffix_link == None:
+        if location.node.suffix_link is None:
             # When a node does NOT have a suffix link, it is a newly
             # created internal node, and will get its link as the value
             # is processed.  The Ukkonen algorithm guarantees the parent
             # has a suffix link, since at most one node in entire graph
             # is missing a suffix link during processing of a value.
-            amount_to_traverse = location.node.incoming_edge_length
+            amount_to_traverse = location.node.incoming_edge_length()
             parent = location.node.parent
             value_offset = location.node.incoming_edge_start_offset
 
@@ -50,21 +50,25 @@ class Relocate:
 
             return self.traverse_down(location, parent.suffix_link, value_offset, amount_to_traverse), True
         else:
-            return LocationFactory.create(location.node.suffix_link, Location.ON_NODE), True
+            return LocationFactory.createOnNode(location, location.node.suffix_link), True
 
     def traverse_down(self, location, node, offset, amount_to_traverse):
         """Traverse down a node starting at a given offset in the data
-        source when the path down is assumed to exist.  This allows
-        downward traversal by only checking the first value down.
+        source when the path down is assumed to exist (skip/count), so
+        we only check first value when traversing edge down.
+        :param amount_to_traverse:
+        :param offset:
+        :param node:
+        :param location:
         """
         if amount_to_traverse == 0:
-            return LocationFactory.create(node, Location.ON_NODE)
+            return LocationFactory.createOnNode(location, node)
         else:
             child = node.children[self.data_store.value_at(offset)]
-            if child.is_leaf() or child.incoming_edge_length >= amount_to_traverse:
-                return LocationFactory.create(child, child.incoming_edge_start_offset + amount_to_traverse - 1)
+            if child.is_leaf() or child.incoming_edge_length() >= amount_to_traverse:
+                return LocationFactory.create(location, child, child.incoming_edge_start_offset + amount_to_traverse - 1)
             else:
-                edge_length = child.incoming_edge_length
+                edge_length = child.incoming_edge_length()
                 amount_to_traverse -= edge_length
-                return self.traverse_down(LocationFactory.create(child, Location.ON_NODE),
+                return self.traverse_down(LocationFactory.createOnNode(location, child),
                                           child, offset + edge_length, amount_to_traverse)

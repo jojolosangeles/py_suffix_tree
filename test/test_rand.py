@@ -1,6 +1,6 @@
 from itertools import count
 
-from suffix_tree.location import LocationFactory
+from suffix_tree.location import LocationFactory, Location
 from suffix_tree.node_factory import NodeFactory
 from suffix_tree.relocate import Relocate
 from suffix_tree.suffix_linker import SuffixLinker
@@ -10,7 +10,8 @@ import random
 import string
 
 def find(str, node, data_store):
-    location = LocationFactory.create(node)
+    location = Location(node, Location.ON_NODE)
+    location = LocationFactory.createOnNode(location, node)
     mover = Relocate(data_store)
     for x in str:
         location, found_value = mover.follow_value(location, x)

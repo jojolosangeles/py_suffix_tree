@@ -2,15 +2,12 @@
 
 
 class Location:
-    ON_INCOMING_EDGE_START = -1
-    ON_NODE = -2
+    ON_NODE = -1
 
     """A location within a suffix tree, either on a node or on an edge."""
     def __init__(self, node, data_offset):
         self.node = node
-        if data_offset == Location.ON_INCOMING_EDGE_START:
-            data_offset = node.incoming_edge_start_offset
-        elif data_offset == Location.ON_NODE:
+        if data_offset == Location.ON_NODE:
             data_offset = node.incoming_edge_end_offset
         self.data_offset = data_offset
         self.on_node = (self.node.incoming_edge_end_offset == data_offset)
@@ -25,8 +22,18 @@ class Location:
 
 class LocationFactory:
     @classmethod
-    def create(cls, node, offset = Location.ON_NODE):
-        return Location(node, offset)
+    def createOnNode(cls, location, node):
+        location.node = node
+        location.data_offset = location.node.incoming_edge_end_offset
+        location.on_node = True
+        return location
+
+    @classmethod
+    def create(cls, location, node, offset):
+        location.node = node
+        location.data_offset = offset
+        location.on_node = location.node.incoming_edge_end_offset == offset
+        return location #Location(node, offset)
 
     @classmethod
     def next_data_offset(cls, location):

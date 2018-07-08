@@ -61,10 +61,11 @@ class TreeBuilder:
                 self.node_factory.suffix_linker.link_to(location.node)
             return location, found_value
         else:
-            location = LocationFactory.create(
+            location = LocationFactory.createOnNode(
+                location,
                 self.node_factory.create_internal(
                     self.data_store.value_at(location.node.incoming_edge_start_offset),
                     location.node,
                     self.data_store.value_at(location.data_offset + 1),
-                    location.data_offset), Location.ON_NODE)
+                    location.data_offset))
             return location, True

@@ -9,8 +9,9 @@ class Visitor:
 class NodeDFS:
     def __call__(self, visitor, node, final_id=0):
         visitor.visit(node, final_id)
-        for child in node.children:
-            self(visitor, node.children[child], final_id)
+        if node.children != None:
+            for child in node.children:
+                self(visitor, node.children[child], final_id)
         visitor.after_children_visited(node)
 
 class SuffixCollector(Visitor):
@@ -54,4 +55,4 @@ class DepthVisitor(Visitor):
         elif node.is_leaf():
             node.depth = final_id - node.incoming_edge_start_offset + node.parent.depth
         else:
-            node.depth = node.incoming_edge_length + node.parent.depth
+            node.depth = node.incoming_edge_length() + node.parent.depth
