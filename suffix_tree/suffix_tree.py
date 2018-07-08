@@ -30,6 +30,8 @@ class TreeBuilder:
         value,offset = next(self.data_generator)
         self.data_store.add(value)
         self.last_offset = offset
+        if offset % 100000 == 0:
+            print(offset)
         return value,offset
 
     def finish(self, location):
