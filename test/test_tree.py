@@ -14,7 +14,7 @@ depth_visitor = DepthVisitor()
 
 dfs = NodeDFS()
 dfs(leaf_count_visitor, root_node)
-dfs(depth_visitor, root_node, builder.node_factory.final_id())
+dfs(depth_visitor, root_node, builder.number_nodes())
 
 pv = PrintVisitor()
 dfs(pv, root_node)

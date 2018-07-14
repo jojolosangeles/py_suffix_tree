@@ -73,7 +73,8 @@ def size_of(node):
 
 def printTree(root, location):
     print(nodestr.tree_str(root))
-    print("Location: {}, {}".format(nodestr.node_str(location.node), edge_with_loc(location.node.incoming_edge_start_offset, location.data_offset, nodestr.edge_str(location.node))))
+    if location != None:
+        print("Location: {}, {}".format(nodestr.node_str(location.node), edge_with_loc(location.node.incoming_edge_start_offset, location.data_offset, nodestr.edge_str(location.node))))
     print("tree size={}".format(size_of(root)))
 
 print("START TEST")

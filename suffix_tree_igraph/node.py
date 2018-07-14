@@ -1,6 +1,7 @@
 """Node within a suffix tree."""
 
 
+
 class Node:
     UNDEFINED_OFFSET = -1
 
