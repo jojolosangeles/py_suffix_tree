@@ -56,7 +56,7 @@ class TreeBuilder:
             return location, False
         elif location.on_node:
             self.node_factory.create_leaf(location.node, value, offset)
-            location, found_value = self.relocater.go_to_suffix(location)
+            location, found_value = self.relocater.go_to_suffix(location, self.node_factory)
             if location.on_node:
                 self.node_factory.suffix_linker.link_to(location.node)
             return location, found_value

@@ -9,11 +9,16 @@ class Visitor:
         pass
 
 class NodeDFS:
+    def __init__(self, graph, node_factory):
+        self.graph = graph
+        self.node_factory = node_factory
+
     def __call__(self, visitor, node, final_id=0):
         visitor.visit(node, final_id)
-        if node.children != None:
-            for child in node.children:
-                self(visitor, node.children[child], final_id)
+        edges = self.graph.es.select(_from=node.id)
+        for edge in edges:
+            child = self.node_factory.nodes[edge.tuple[1]]
+            self(visitor, child, final_id)
         visitor.after_children_visited(node)
 
 class SuffixCollector(Visitor):

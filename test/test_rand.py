@@ -1,6 +1,5 @@
 from itertools import count
 
-from suffix_tree_igraph.data_store import NodeStr
 from suffix_tree_igraph.location import LocationFactory, Location
 from suffix_tree_igraph.node_factory import NodeFactory
 from suffix_tree_igraph.relocate import Relocate
@@ -9,7 +8,7 @@ from suffix_tree_igraph.suffix_tree import TreeBuilder
 from suffix_tree_igraph.visitor.visitor import NodeDFS, SuffixCollector
 import random
 import string
-from suffix_tree_igraph.igraph_adapter import igraph_print_tree, igraph_reset
+from suffix_tree_igraph.igraph_adapter import igraph_print_tree, igraph_reset, igraph_instance
 
 
 def find(str, node, data_store, node_factory):
@@ -21,7 +20,7 @@ def find(str, node, data_store, node_factory):
         if not found_value:
             raise ValueError("Did not find {} in {}".format(x, str))
     suffix_collector = SuffixCollector()
-    nodeDFS = NodeDFS()
+    nodeDFS = NodeDFS(igraph_instance(), node_factory)
     nodeDFS(suffix_collector, location.node)
     return suffix_collector.suffixes
 

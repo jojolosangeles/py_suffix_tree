@@ -6,6 +6,9 @@ class IgraphAdapter:
         self.g = Graph(directed=True)
         self.has_edges = False
 
+    def instance(self):
+        return self.g
+
     def add_vertices(self, n):
         self.g.add_vertices(n)
 
@@ -15,6 +18,10 @@ class IgraphAdapter:
 
     def remove_edge(self, from_vertex_id, to_vertex_id):
         self.g.delete_edges([(from_vertex_id, to_vertex_id)])
+
+    def parent_id(self, node_id):
+        edges = self.g.es.select(_to=node_id)
+        return edges[0].tuple[0]
 
     def has_outgoing_edge(self, id, value):
         if self.has_edges:
@@ -33,10 +40,15 @@ def no_print(*args, **kwargs):
 
 ig_print = no_print
 
+def igraph_instance():
+    return ig_adapter.instance()
+
 def igraph_reset():
     global ig_adapter
     ig_adapter = IgraphAdapter()
 
+def igraph_parent_id(node_id):
+    return ig_adapter.parent_id(node_id)
 
 def igraph_add_vertex():
     ig_adapter.add_vertices(1)

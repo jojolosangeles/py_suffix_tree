@@ -1,4 +1,4 @@
-from suffix_tree_igraph.igraph_adapter import igraph_has_outgoing_edge
+from suffix_tree_igraph.igraph_adapter import igraph_has_outgoing_edge, igraph_parent_id
 from suffix_tree_igraph.location import LocationFactory, Location
 
 
@@ -27,7 +27,7 @@ class Relocate:
             return LocationFactory.next_data_offset(location), True
         return location, False
 
-    def go_to_suffix(self, location):
+    def go_to_suffix(self, location, node_factory):
         """
         Traverse to the suffix for this node.
 
@@ -45,7 +45,8 @@ class Relocate:
             # has a suffix link, since at most one node in entire graph
             # is missing a suffix link during processing of a value.
             amount_to_traverse = location.node.incoming_edge_length()
-            parent = location.node.parent
+            parent_id = igraph_parent_id(location.node.id)
+            parent = node_factory.get_node_by_id(parent_id)
             value_offset = location.node.incoming_edge_start_offset
 
             # By definition, suffix links decrease depth in tree by one value
@@ -55,14 +56,15 @@ class Relocate:
                 value_offset += 1
                 amount_to_traverse -= 1
 
-            return self.traverse_down(location, parent.suffix_link, value_offset, amount_to_traverse), True
+            return self.traverse_down(location, parent.suffix_link, value_offset, amount_to_traverse, node_factory), True
         else:
             return LocationFactory.createOnNode(location, location.node.suffix_link), True
 
-    def traverse_down(self, location, node, offset, amount_to_traverse):
+    def traverse_down(self, location, node, offset, amount_to_traverse, node_factory):
         """Traverse down a node starting at a given offset in the data
         source when the path down is assumed to exist (skip/count), so
         we only check first value when traversing edge down.
+        :param node_factory:
         :param amount_to_traverse:
         :param offset:
         :param node:
@@ -71,11 +73,12 @@ class Relocate:
         if amount_to_traverse == 0:
             return LocationFactory.createOnNode(location, node)
         else:
-            child = node.children[self.data_store.value_at(offset)]
+            found,node_id = igraph_has_outgoing_edge(node.id, self.data_store.value_at(offset))
+            child = node_factory.get_node_by_id(node_id)
             if child.is_leaf() or child.incoming_edge_length() >= amount_to_traverse:
                 return LocationFactory.create(location, child, child.incoming_edge_start_offset + amount_to_traverse - 1)
             else:
                 edge_length = child.incoming_edge_length()
                 amount_to_traverse -= edge_length
-                return self.traverse_down(LocationFactory.createOnNode(location, child),
-                                          child, offset + edge_length, amount_to_traverse)
+                return self.traverse_down(LocationFactory.createOnNode(location, child), child, offset + edge_length,
+                                          amount_to_traverse, )
