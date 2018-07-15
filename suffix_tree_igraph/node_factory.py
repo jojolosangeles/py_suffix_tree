@@ -1,6 +1,7 @@
 from itertools import count
 
-from suffix_tree_igraph.igraph_adapter import igraph_add_edge, igraph_remove_edge, igraph_add_vertex, igraph_parent_id
+from suffix_tree_igraph.igraph_adapter import igraph_add_edge, igraph_remove_edge, igraph_add_vertex, igraph_parent_id, \
+    igraph_add_suffix_link
 from suffix_tree_igraph.node import RootNode, LeafNode, Node
 
 
@@ -12,6 +13,8 @@ class NodeFactory:
         self.nodes = []
 
     def get_node_by_id(self, id):
+        if id == None:
+            return None
         return self.nodes[id]
 
     def add_node(self, node):
@@ -28,7 +31,7 @@ class NodeFactory:
         return leaf
 
     def create_internal(self, value, node, value2, end_offset):
-        new_node = Node(next(self.id_generator), node.incoming_edge_start_offset, end_offset, None)
+        new_node = Node(next(self.id_generator), node.incoming_edge_start_offset, end_offset)
         igraph_add_vertex()
         self.add_node(new_node)
         parent_id = igraph_parent_id(node.id)
@@ -42,6 +45,7 @@ class NodeFactory:
     def create_root(self):
         root = RootNode(next(self.id_generator))
         igraph_add_vertex()
+        igraph_add_suffix_link(root.id, root.id)
         self.add_node(root)
         return root
 

@@ -7,17 +7,16 @@ class Node:
 
     """Node represents an offset in a sequence of values."""
 
-    def __init__(self, id, incoming_edge_start_offset, incoming_edge_end_offset=UNDEFINED_OFFSET, suffix_link=None):
+    def __init__(self, id, incoming_edge_start_offset, incoming_edge_end_offset=UNDEFINED_OFFSET):
         self.id = id
         self.incoming_edge_start_offset = incoming_edge_start_offset
         self.incoming_edge_end_offset = incoming_edge_end_offset
-        self.suffix_link = suffix_link
 
     def is_root(self):
-        return self.suffix_link == self
+        return self.id == 0
 
     def is_leaf(self):
-        return self.suffix_link is None
+        return self.incoming_edge_end_offset == self.UNDEFINED_OFFSET
 
     def incoming_edge_length(self):
         return self.incoming_edge_end_offset - self.incoming_edge_start_offset + 1
@@ -25,7 +24,7 @@ class Node:
 
 class RootNode(Node):
     def __init__(self, id):
-        super().__init__(id, Node.UNDEFINED_OFFSET, Node.UNDEFINED_OFFSET, self)
+        super().__init__(id, Node.UNDEFINED_OFFSET, Node.UNDEFINED_OFFSET)
 
     def incoming_edge_length(self):
         return 0

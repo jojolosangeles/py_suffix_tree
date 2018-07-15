@@ -1,4 +1,4 @@
-from suffix_tree_igraph.igraph_adapter import igraph_has_outgoing_edge, igraph_parent_id
+from suffix_tree_igraph.igraph_adapter import igraph_has_outgoing_edge, igraph_parent_id, igraph_get_suffix_link
 from suffix_tree_igraph.location import LocationFactory, Location
 
 
@@ -38,7 +38,9 @@ class Relocate:
         if location.node.is_root():
             return location, False
 
-        if location.node.suffix_link is None:
+        suffix_link_id = igraph_get_suffix_link(location.node.id)
+        suffix_link_node = node_factory.get_node_by_id(suffix_link_id)
+        if suffix_link_node is None:
             # When a node does NOT have a suffix link, it is a newly
             # created internal node, and will get its link as the value
             # is processed.  The Ukkonen algorithm guarantees the parent
@@ -49,16 +51,17 @@ class Relocate:
             parent = node_factory.get_node_by_id(parent_id)
             value_offset = location.node.incoming_edge_start_offset
 
-            # By definition, suffix links decrease depth in tree by one value
-            # except for root, which has itself as a suffix link, in that case
-            # we have to manually skip a value.
+            # By definition, suffix links decrease depth in tree by one value,
+            # except for root.  Root's suffix link is to itself, so we
+            # have to manually skip the value before traversing back down
             if parent.is_root():
                 value_offset += 1
                 amount_to_traverse -= 1
-
-            return self.traverse_down(location, parent.suffix_link, value_offset, amount_to_traverse, node_factory), True
+            suffix_link_id = igraph_get_suffix_link(parent_id)
+            suffix_link_node = node_factory.get_node_by_id(suffix_link_id)
+            return self.traverse_down(location, suffix_link_node, value_offset, amount_to_traverse, node_factory), True
         else:
-            return LocationFactory.createOnNode(location, location.node.suffix_link), True
+            return LocationFactory.createOnNode(location, suffix_link_node), True
 
     def traverse_down(self, location, node, offset, amount_to_traverse, node_factory):
         """Traverse down a node starting at a given offset in the data

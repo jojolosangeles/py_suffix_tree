@@ -15,7 +15,7 @@ class NodeDFS:
 
     def __call__(self, visitor, node, final_id=0):
         visitor.visit(node, final_id)
-        edges = self.graph.es.select(_from=node.id)
+        edges = self.graph.es.select(_from=node.id, suffix_link=False)
         for edge in edges:
             child = self.node_factory.nodes[edge.tuple[1]]
             self(visitor, child, final_id)

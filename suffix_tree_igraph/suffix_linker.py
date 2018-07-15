@@ -1,3 +1,6 @@
+from suffix_tree_igraph.igraph_adapter import igraph_add_suffix_link
+
+
 class SuffixLinker:
 
     def __init__(self):
@@ -12,5 +15,5 @@ class SuffixLinker:
 
     def link_to(self, node):
         if self.node_missing_suffix_link != None:
-            self.node_missing_suffix_link.suffix_link = node
+            igraph_add_suffix_link(self.node_missing_suffix_link.id, node.id)
         self.node_missing_suffix_link = None
