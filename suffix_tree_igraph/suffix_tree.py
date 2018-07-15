@@ -1,4 +1,5 @@
 from suffix_tree_igraph.data_store import DataStore
+from suffix_tree_igraph.igraph_adapter import igraph_get_incoming_edge_start_offset
 from suffix_tree_igraph.relocate import Relocate
 from suffix_tree_igraph.location import Location, LocationFactory
 from itertools import count
@@ -61,10 +62,11 @@ class TreeBuilder:
                 self.node_factory.suffix_linker.link_to(location.node)
             return location, found_value
         else:
+            incoming_edge_start_offset = igraph_get_incoming_edge_start_offset(location.node.id)
             location = LocationFactory.createOnNode(
                 location,
                 self.node_factory.create_internal(
-                    self.data_store.value_at(location.node.incoming_edge_start_offset),
+                    self.data_store.value_at(incoming_edge_start_offset),
                     location.node,
                     self.data_store.value_at(location.data_offset + 1),
                     location.data_offset))

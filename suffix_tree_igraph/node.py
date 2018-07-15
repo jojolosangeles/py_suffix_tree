@@ -1,5 +1,5 @@
 """Node within a suffix tree."""
-
+from suffix_tree_igraph.igraph_adapter import igraph_is_root, igraph_is_leaf, igraph_get_incoming_edge_length
 
 
 class Node:
@@ -7,33 +7,30 @@ class Node:
 
     """Node represents an offset in a sequence of values."""
 
-    def __init__(self, id, incoming_edge_start_offset, incoming_edge_end_offset=UNDEFINED_OFFSET):
+    def __init__(self, id):
         self.id = id
-        self.incoming_edge_start_offset = incoming_edge_start_offset
-        self.incoming_edge_end_offset = incoming_edge_end_offset
 
     def is_root(self):
-        return self.id == 0
+        return igraph_is_root(self.id)
 
     def is_leaf(self):
-        return self.incoming_edge_end_offset == self.UNDEFINED_OFFSET
+        return igraph_is_leaf(self.id)
 
     def incoming_edge_length(self):
-        return self.incoming_edge_end_offset - self.incoming_edge_start_offset + 1
+        return igraph_get_incoming_edge_length(self.id)
 
 
 class RootNode(Node):
     def __init__(self, id):
-        super().__init__(id, Node.UNDEFINED_OFFSET, Node.UNDEFINED_OFFSET)
+        super().__init__(id)
 
     def incoming_edge_length(self):
         return 0
 
 
 class LeafNode(Node):
-    def __init__(self, id, incoming_edge_start_offset, suffix_offset):
-        super().__init__(id, incoming_edge_start_offset)
-        self.suffix_offset = suffix_offset
+    def __init__(self, id):
+        super().__init__(id)
 
     def incoming_edge_length(self):
         return 0

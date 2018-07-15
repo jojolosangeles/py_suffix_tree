@@ -27,7 +27,10 @@ To convert parent-child relationship to igraph:
                 add edges _from-(new), (new)-_to,
                 remove edge _from-_to
 
-2. adjust traversal to use igraph structure
+2. adjust suffix_tree to use igraph structure
+
+    a. replace all Node properties with igraph adapter methods
+    b. remove Node class
 
 3. remove original implementation
 

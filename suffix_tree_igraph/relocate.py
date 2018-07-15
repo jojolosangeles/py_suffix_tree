@@ -1,4 +1,5 @@
-from suffix_tree_igraph.igraph_adapter import igraph_has_outgoing_edge, igraph_parent_id, igraph_get_suffix_link
+from suffix_tree_igraph.igraph_adapter import igraph_has_outgoing_edge, igraph_parent_id, igraph_get_suffix_link, \
+    igraph_get_incoming_edge_start_offset, igraph_get_incoming_edge_length
 from suffix_tree_igraph.location import LocationFactory, Location
 
 
@@ -22,7 +23,8 @@ class Relocate:
             found,node_id = igraph_has_outgoing_edge(location.node.id, value)
             if found is True:
                 dest_node = self.node_factory.get_node_by_id(node_id)
-                return LocationFactory.create(location, dest_node, dest_node.incoming_edge_start_offset), True
+                incoming_edge_start_offset = igraph_get_incoming_edge_start_offset(node_id)
+                return LocationFactory.create(location, dest_node, incoming_edge_start_offset), True
         elif value == self.data_store.value_at(location.data_offset + 1):
             return LocationFactory.next_data_offset(location), True
         return location, False
@@ -46,10 +48,10 @@ class Relocate:
             # is processed.  The Ukkonen algorithm guarantees the parent
             # has a suffix link, since at most one node in entire graph
             # is missing a suffix link during processing of a value.
-            amount_to_traverse = location.node.incoming_edge_length()
+            amount_to_traverse = igraph_get_incoming_edge_length(location.node.id)
             parent_id = igraph_parent_id(location.node.id)
             parent = node_factory.get_node_by_id(parent_id)
-            value_offset = location.node.incoming_edge_start_offset
+            value_offset = igraph_get_incoming_edge_start_offset(location.node.id)
 
             # By definition, suffix links decrease depth in tree by one value,
             # except for root.  Root's suffix link is to itself, so we
@@ -79,7 +81,8 @@ class Relocate:
             found,node_id = igraph_has_outgoing_edge(node.id, self.data_store.value_at(offset))
             child = node_factory.get_node_by_id(node_id)
             if child.is_leaf() or child.incoming_edge_length() >= amount_to_traverse:
-                return LocationFactory.create(location, child, child.incoming_edge_start_offset + amount_to_traverse - 1)
+                incoming_edge_start_offset = igraph_get_incoming_edge_start_offset(child.id)
+                return LocationFactory.create(location, child, incoming_edge_start_offset + amount_to_traverse - 1)
             else:
                 edge_length = child.incoming_edge_length()
                 amount_to_traverse -= edge_length

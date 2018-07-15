@@ -1,4 +1,4 @@
-from suffix_tree_igraph.igraph_adapter import ig_print
+from suffix_tree_igraph.igraph_adapter import ig_print, igraph_suffix_offset
 
 
 class Visitor:
@@ -21,13 +21,14 @@ class NodeDFS:
             self(visitor, child, final_id)
         visitor.after_children_visited(node)
 
+
 class SuffixCollector(Visitor):
     def __init__(self):
         self.suffixes = []
 
     def visit(self, node, final_id=0):
         if node.is_leaf():
-            self.suffixes.append(node.suffix_offset)
+            self.suffixes.append(igraph_suffix_offset(node.id))
 
 class PrintVisitor:
     def __init__(self):

@@ -9,6 +9,26 @@ class IgraphAdapter:
     def instance(self):
         return self.g
 
+    def suffix_offset(self, vertex_id):
+        return self.g.vs[vertex_id]['suffix_offset']
+
+    def get_incoming_edge_offsets(self, vertex_id):
+        edge = self.get_incoming_edge(vertex_id)
+        return edge['so'],edge['eo']
+
+    def get_incoming_edge_start_offset(self, vertex_id):
+        edge = self.get_incoming_edge(vertex_id)
+        return edge['so']
+
+    def get_incoming_edge_end_offset(self, vertex_id):
+        edge = self.get_incoming_edge(vertex_id)
+        return edge['eo']
+
+    def add_leaf(self, suffix_offset):
+        id = len(self.g.vs)
+        self.add_vertices(1)
+        self.g.vs[id]['suffix_offset'] = suffix_offset
+
     def add_vertices(self, n):
         self.g.add_vertices(n)
 
@@ -28,6 +48,23 @@ class IgraphAdapter:
         if len(edges) == 1:
             return edges[0].tuple[1]
         return None
+
+    def get_incoming_edge(self, vertex_id):
+        edges = self.g.es.select(_to=vertex_id, suffix_link=False)
+        if len(edges) == 1:
+            edge = edges[0]
+            return edge
+        raise ValueError
+
+    def get_incoming_edge_length(self, vertex_id):
+        edge = self.get_incoming_edge(vertex_id)
+        return edge['eo'] - edge['so'] + 1
+
+    def is_leaf(self, vertex_id):
+        return self.get_suffix_link(vertex_id) == None
+
+    def is_root(self, vertex_id):
+        return self.get_suffix_link(vertex_id) == vertex_id
 
     def add_suffix_link(self, from_id, to_id):
         self.g.add_edge(from_id, to_id, suffix_link=True)
@@ -52,6 +89,9 @@ ig_print = no_print
 def igraph_instance():
     return ig_adapter.instance()
 
+def igraph_suffix_offset(id):
+    return ig_adapter.suffix_offset(id)
+
 def igraph_reset():
     global ig_adapter
     ig_adapter = IgraphAdapter()
@@ -61,6 +101,9 @@ def igraph_parent_id(node_id):
 
 def igraph_add_vertex():
     ig_adapter.add_vertices(1)
+
+def igraph_add_leaf(suffix_offset):
+    ig_adapter.add_leaf(suffix_offset)
 
 def igraph_add_edge(from_id, to_id, edge_key, start_offset, end_offset):
     ig_print("igraph_add_edge {} to {}".format(from_id, to_id))
@@ -84,3 +127,25 @@ def igraph_add_suffix_link(from_id, to_id):
 
 def igraph_get_suffix_link(from_id):
     return ig_adapter.get_suffix_link(from_id)
+
+def igraph_is_leaf(id):
+    return ig_adapter.is_leaf(id)
+
+def igraph_is_root(id):
+    return ig_adapter.is_root(id)
+
+def igraph_get_incoming_edge_length(id):
+    return ig_adapter.get_incoming_edge_length(id)
+
+def igraph_get_incoming_edge_offsets(id):
+    return ig_adapter.get_incoming_edge_offsets(id)
+
+def igraph_get_incoming_edge_end_offset(id):
+    if igraph_is_root(id):
+        return -1
+    return ig_adapter.get_incoming_edge_end_offset(id)
+
+def igraph_get_incoming_edge_start_offset(id):
+    if igraph_is_root(id):
+        return -1
+    return ig_adapter.get_incoming_edge_start_offset(id)
