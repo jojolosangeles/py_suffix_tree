@@ -1,19 +1,18 @@
-from suffix_tree_igraph.igraph_adapter import igraph_add_suffix_link
 
 
 class SuffixLinker:
-
-    def __init__(self):
+    def __init__(self, add_suffix_link_method):
         self.node_missing_suffix_link = None
+        self.add_suffix_link_method = add_suffix_link_method
 
-    def needs_suffix_link(self, node_id):
+    def needs_suffix_link(self, node):
         """Any newly created internal node needs a suffix link.  If a previously
         created node is missing its suffix link, then it just points
         to this node."""
-        self.link_to(node_id)
-        self.node_missing_suffix_link = node_id
+        self.link_to(node)
+        self.node_missing_suffix_link = node
 
-    def link_to(self, node_id):
+    def link_to(self, node):
         if self.node_missing_suffix_link != None:
-            igraph_add_suffix_link(self.node_missing_suffix_link, node_id)
+            self.add_suffix_link_method(self.node_missing_suffix_link, node)
         self.node_missing_suffix_link = None

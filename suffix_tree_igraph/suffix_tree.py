@@ -1,31 +1,28 @@
 from suffix_tree_igraph.data_store import DataStore
-from suffix_tree_igraph.igraph_adapter import igraph_get_incoming_edge_start_offset
 from suffix_tree_igraph.relocate import Relocate
 from suffix_tree_igraph.location import Location, LocationFactory
 from itertools import count
 
+from suffix_tree_igraph.suffix_tree_graph import SuffixTreeGraph, IgraphStrategy
+
 
 class TreeBuilder:
-    def __init__(self, datasource, node_factory, terminal_value=-1):
-        self.id_count = count()
-        self.data_generator = ((val,offset) for (val,offset) in zip(datasource,self.id_count))
-        self.node_factory = node_factory
+    def __init__(self, datasource, terminal_value=-1):
+        self.offset_generator = count()
+        self.data_generator = ((val,offset) for (val,offset) in zip(datasource,self.offset_generator))
         self.terminal_value = terminal_value
         self.data_store = DataStore()
-        self.root_id = node_factory.create_root()
-        self.relocater = Relocate(self.data_store, node_factory)
+        self.tree_graph = SuffixTreeGraph(IgraphStrategy())
+        self.relocater = Relocate(self.data_store, self.tree_graph)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
-        location = Location(self.root_id, Location.ON_NODE)
+        location = Location(self.tree_graph.root)
         try:
             while True:
                 location = self.process_value(location, *self.get_next_value_and_offset())
         except StopIteration:
             self.finish(location)
-
-    def number_nodes(self):
-        return self.node_factory.final_id()
 
     def get_next_value_and_offset(self):
         value,offset = next(self.data_generator)
@@ -56,18 +53,16 @@ class TreeBuilder:
         if found_value:
             return location, False
         elif location.on_node:
-            self.node_factory.create_leaf(location.node_id, value, offset)
-            location, found_value = self.relocater.go_to_suffix(location, self.node_factory)
+            self.tree_graph.create_leaf(location.node_id, value, offset)
+            location, found_value = self.relocater.go_to_suffix(location)
             if location.on_node:
-                self.node_factory.suffix_linker.link_to(location.node_id)
+                self.tree_graph.suffix_linker.link_to(location.node_id)
             return location, found_value
         else:
-            incoming_edge_start_offset = igraph_get_incoming_edge_start_offset(location.node_id)
-            location = LocationFactory.create_on_node(
-                location,
-                self.node_factory.create_internal(
-                    self.data_store.value_at(incoming_edge_start_offset),
-                    location.node_id,
-                    self.data_store.value_at(location.data_offset + 1),
-                    location.data_offset))
-            return location, True
+            incoming_edge_start_offset = location.start_offset
+            internal_node = self.tree_graph.create_internal(
+                self.data_store.value_at(incoming_edge_start_offset),
+                location.node_id,
+                self.data_store.value_at(location.data_offset + 1),
+                location.data_offset)
+            return LocationFactory.create_on_node(location, internal_node, incoming_edge_start_offset, location.data_offset), True
