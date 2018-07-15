@@ -14,7 +14,7 @@ class IgraphAdapter:
 
     def get_incoming_edge_offsets(self, vertex_id):
         edge = self.get_incoming_edge(vertex_id)
-        return edge['so'],edge['eo']
+        return edge['so'], edge['eo']
 
     def get_incoming_edge_start_offset(self, vertex_id):
         edge = self.get_incoming_edge(vertex_id)
@@ -86,24 +86,31 @@ def no_print(*args, **kwargs):
 
 ig_print = no_print
 
+
 def igraph_instance():
     return ig_adapter.instance()
 
+
 def igraph_suffix_offset(id):
     return ig_adapter.suffix_offset(id)
+
 
 def igraph_reset():
     global ig_adapter
     ig_adapter = IgraphAdapter()
 
+
 def igraph_parent_id(node_id):
     return ig_adapter.parent_id(node_id)
+
 
 def igraph_add_vertex():
     ig_adapter.add_vertices(1)
 
+
 def igraph_add_leaf(suffix_offset):
     ig_adapter.add_leaf(suffix_offset)
+
 
 def igraph_add_edge(from_id, to_id, edge_key, start_offset, end_offset):
     ig_print("igraph_add_edge {} to {}".format(from_id, to_id))
@@ -122,30 +129,39 @@ def igraph_print_tree(nodestr, root, location):
 def igraph_has_outgoing_edge(id, value):
     return ig_adapter.has_outgoing_edge(id, value)
 
+
 def igraph_add_suffix_link(from_id, to_id):
     ig_adapter.add_suffix_link(from_id, to_id)
+
 
 def igraph_get_suffix_link(from_id):
     return ig_adapter.get_suffix_link(from_id)
 
-def igraph_is_leaf(id):
-    return ig_adapter.is_leaf(id)
-
-def igraph_is_root(id):
-    return ig_adapter.is_root(id)
 
 def igraph_get_incoming_edge_length(id):
     return ig_adapter.get_incoming_edge_length(id)
 
+
 def igraph_get_incoming_edge_offsets(id):
     return ig_adapter.get_incoming_edge_offsets(id)
+
 
 def igraph_get_incoming_edge_end_offset(id):
     if igraph_is_root(id):
         return -1
     return ig_adapter.get_incoming_edge_end_offset(id)
 
+
 def igraph_get_incoming_edge_start_offset(id):
     if igraph_is_root(id):
         return -1
     return ig_adapter.get_incoming_edge_start_offset(id)
+
+
+# about the vertex
+def igraph_is_leaf(id):
+    return ig_adapter.is_leaf(id)
+
+
+def igraph_is_root(id):
+    return ig_adapter.is_root(id)

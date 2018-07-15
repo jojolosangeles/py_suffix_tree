@@ -11,9 +11,9 @@ import string
 from suffix_tree_igraph.igraph_adapter import igraph_print_tree, igraph_reset, igraph_instance
 
 
-def find(str, node, data_store, node_factory):
-    location = Location(node, Location.ON_NODE)
-    location = LocationFactory.createOnNode(location, node)
+def find(str, node_id, data_store, node_factory):
+    location = Location(node_id, Location.ON_NODE)
+    location = LocationFactory.create_on_node(location, node_id)
     mover = Relocate(data_store, node_factory)
     for x in str:
         location, found_value = mover.follow_value(location, x)
@@ -21,12 +21,12 @@ def find(str, node, data_store, node_factory):
             raise ValueError("Did not find {} in {}".format(x, str))
     suffix_collector = SuffixCollector()
     nodeDFS = NodeDFS(igraph_instance(), node_factory)
-    nodeDFS(suffix_collector, location.node)
+    nodeDFS(suffix_collector, location.node_id)
     return suffix_collector.suffixes
 
 random.seed(3)
 testcount = 0
-for rlen in range(1,20):
+for rlen in range(1,30):
     print("TEST {}".format(rlen))
     igraph_reset()
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
@@ -38,14 +38,14 @@ for rlen in range(1,20):
     for substrlen in range(1, rlen+1):
         for start_offset,end_offset in zip(count(), range(substrlen-1, rlen)):
             test_str = builder.data_store.value_str(start_offset, end_offset)
-            result = find(test_str, builder.root, builder.data_store, builder.node_factory)
+            result = find(test_str, builder.root_id, builder.data_store, builder.node_factory)
             assert(start_offset in result)
             testcount += 1
     for substrlen in range(1, rlen+1):
         for start_offset,end_offset in zip(count(), range(substrlen-1, rlen)):
             test_str = builder.data_store.value_str(start_offset, end_offset) + "z"
             try:
-                result = find(test_str, builder.root, builder.data_store, builder.node_factory)
+                result = find(test_str, builder.root_id, builder.data_store, builder.node_factory)
             except ValueError:
                 testcount += 1
 

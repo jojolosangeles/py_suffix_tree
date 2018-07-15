@@ -12,12 +12,12 @@ class TreeBuilder:
         self.node_factory = node_factory
         self.terminal_value = terminal_value
         self.data_store = DataStore()
-        self.root = node_factory.create_root()
+        self.root_id = node_factory.create_root()
         self.relocater = Relocate(self.data_store, node_factory)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
-        location = Location(self.root, Location.ON_NODE)
+        location = Location(self.root_id, Location.ON_NODE)
         try:
             while True:
                 location = self.process_value(location, *self.get_next_value_and_offset())
@@ -56,18 +56,18 @@ class TreeBuilder:
         if found_value:
             return location, False
         elif location.on_node:
-            self.node_factory.create_leaf(location.node, value, offset)
+            self.node_factory.create_leaf(location.node_id, value, offset)
             location, found_value = self.relocater.go_to_suffix(location, self.node_factory)
             if location.on_node:
-                self.node_factory.suffix_linker.link_to(location.node)
+                self.node_factory.suffix_linker.link_to(location.node_id)
             return location, found_value
         else:
-            incoming_edge_start_offset = igraph_get_incoming_edge_start_offset(location.node.id)
-            location = LocationFactory.createOnNode(
+            incoming_edge_start_offset = igraph_get_incoming_edge_start_offset(location.node_id)
+            location = LocationFactory.create_on_node(
                 location,
                 self.node_factory.create_internal(
                     self.data_store.value_at(incoming_edge_start_offset),
-                    location.node,
+                    location.node_id,
                     self.data_store.value_at(location.data_offset + 1),
                     location.data_offset))
             return location, True
