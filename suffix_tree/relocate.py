@@ -1,6 +1,3 @@
-from suffix_tree.location import LocationFactory, Location
-
-
 class Relocate:
     def __init__(self, data_store):
         self.data_store = data_store
@@ -9,27 +6,29 @@ class Relocate:
         """Follow a value to get a new location.
 
         Returns:
-            (newLocation, True) if successful
-            (originalLocation, False) otherwise
+            True if successfully modified location
+            False otherwise
         """
         if location.on_node:
             if value in location.node.children:
                 dest_node = location.node.children[value]
-                return LocationFactory.create(location, dest_node, dest_node.incoming_edge_start_offset), True
+                location.locate_on_edge(dest_node, dest_node.incoming_edge_start_offset)
+                return True
         elif value == self.data_store.value_at(location.data_offset + 1):
-            return LocationFactory.next_data_offset(location), True
-        return location, False
+            location.next_data_offset()
+            return True
+        return False
 
     def go_to_suffix(self, location):
         """
         Traverse to the suffix for this node.
 
         Return:
-                (new location, True) if the location changed
-                (original location, False) if location unchanged
+                True if the location changed
+                False otherwise
         """
         if location.node.is_root():
-            return location, False
+            return False
 
         if location.node.suffix_link is None:
             # When a node does NOT have a suffix link, it is a newly
@@ -48,27 +47,25 @@ class Relocate:
                 value_offset += 1
                 amount_to_traverse -= 1
 
-            return self.traverse_down(location, parent.suffix_link, value_offset, amount_to_traverse), True
+            self.traverse_down(location, parent.suffix_link, value_offset, amount_to_traverse)
+            return True
         else:
-            return LocationFactory.createOnNode(location, location.node.suffix_link), True
+            location.locate_on_node(location.node.suffix_link)
+            return True
 
     def traverse_down(self, location, node, offset, amount_to_traverse):
         """Traverse down a node starting at a given offset in the data
         source when the path down is assumed to exist (skip/count), so
         we only check first value when traversing edge down.
-        :param amount_to_traverse:
-        :param offset:
-        :param node:
-        :param location:
         """
         if amount_to_traverse == 0:
-            return LocationFactory.createOnNode(location, node)
+            location.locate_on_node(node)
         else:
             child = node.children[self.data_store.value_at(offset)]
             if child.is_leaf() or child.incoming_edge_length() >= amount_to_traverse:
-                return LocationFactory.create(location, child, child.incoming_edge_start_offset + amount_to_traverse - 1)
+                location.locate_on_edge(child, child.incoming_edge_start_offset + amount_to_traverse - 1)
             else:
                 edge_length = child.incoming_edge_length()
                 amount_to_traverse -= edge_length
-                return self.traverse_down(LocationFactory.createOnNode(location, child),
-                                          child, offset + edge_length, amount_to_traverse)
+                location.locate_on_node(child)
+                self.traverse_down(location, child, offset + edge_length, amount_to_traverse)

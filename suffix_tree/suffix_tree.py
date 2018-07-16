@@ -1,6 +1,6 @@
 from suffix_tree.data_store import DataStore
 from suffix_tree.relocate import Relocate
-from suffix_tree.location import Location, LocationFactory
+from suffix_tree.location import Location
 from itertools import count
 
 
@@ -19,7 +19,7 @@ class TreeBuilder:
         location = Location(self.root, Location.ON_NODE)
         try:
             while True:
-                location = self.process_value(location, *self.get_next_value_and_offset())
+                self.process_value(location, *self.get_next_value_and_offset())
         except StopIteration:
             self.finish(location)
 
@@ -30,8 +30,6 @@ class TreeBuilder:
         value,offset = next(self.data_generator)
         self.data_store.add(value)
         self.last_offset = offset
-        if offset % 100000 == 0:
-            print(offset)
         return value,offset
 
     def finish(self, location):
@@ -39,33 +37,31 @@ class TreeBuilder:
         return self.process_value(location, value, self.last_offset + 1)
 
     def process_value(self, location, value, offset):
-        while True:
-            location, continue_processing_value = self.process_value_at_location(location, value, offset)
-            if not continue_processing_value:
-                return location
+        continue_processing_value = True
+        while continue_processing_value:
+            continue_processing_value = self.process_value_at_location(location, value, offset)
 
     def process_value_at_location(self, location, value, offset):
         """Process the value at the given location.
 
         Return:
-            (newLocation, True) if there is more processing to be done
-            (originalLocation, False) otherwise
+            True if there is more processing to be done
+            False otherwise
         """
-        location, found_value = self.relocater.follow_value(location, value)
+        found_value = self.relocater.follow_value(location, value)
         if found_value:
-            return location, False
+            return False
         elif location.on_node:
             self.node_factory.create_leaf(location.node, value, offset)
-            location, found_value = self.relocater.go_to_suffix(location)
+            found_value = self.relocater.go_to_suffix(location)
             if location.on_node:
                 self.node_factory.suffix_linker.link_to(location.node)
-            return location, found_value
+            return found_value
         else:
-            location = LocationFactory.createOnNode(
-                location,
-                self.node_factory.create_internal(
+            new_node = self.node_factory.create_internal(
                     self.data_store.value_at(location.node.incoming_edge_start_offset),
                     location.node,
                     self.data_store.value_at(location.data_offset + 1),
-                    location.data_offset))
-            return location, True
+                    location.data_offset)
+            location.locate_on_node(new_node)
+            return True

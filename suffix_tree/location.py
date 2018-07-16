@@ -12,6 +12,24 @@ class Location:
         self.data_offset = data_offset
         self.on_node = (self.node.incoming_edge_end_offset == data_offset)
 
+    def locate_on_node(self, node):
+        self.node = node
+        self.data_offset = node.incoming_edge_end_offset
+        self.start_offset = node.incoming_edge_start_offset
+        self.end_offset = node.incoming_edge_end_offset
+        self.on_node = True
+
+    def locate_on_edge(self, node, offset):
+        self.node = node
+        self.data_offset = offset
+        self.start_offset = node.incoming_edge_start_offset
+        self.end_offset = node.incoming_edge_end_offset
+        self.on_node = self.end_offset == offset
+
+    def next_data_offset(self):
+        self.data_offset += 1
+        self.on_node = self.end_offset == self.data_offset
+
     def __repr__(self):
         return "node({}), incoming {}-{}, data_offset {}, on_node={}".\
                 format(self.node.id,
@@ -20,21 +38,3 @@ class Location:
                        self.data_offset, self.on_node)
 
 
-class LocationFactory:
-    @classmethod
-    def createOnNode(cls, location, node):
-        location.node = node
-        location.data_offset = location.node.incoming_edge_end_offset
-        location.on_node = True
-        return location
-
-    @classmethod
-    def create(cls, location, node, offset):
-        location.node = node
-        location.data_offset = offset
-        location.on_node = location.node.incoming_edge_end_offset == offset
-        return location #Location(node, offset)
-
-    @classmethod
-    def next_data_offset(cls, location):
-        return Location(location.node, location.data_offset + 1)

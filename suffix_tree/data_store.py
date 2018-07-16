@@ -17,7 +17,7 @@ class DataStore:
         try:
             return self.values[offset]
         except IndexError:
-            print("Offset={}, number values={}".format(offset, len(self.values)))
+            #print("Offset={}, number values={}".format(offset, len(self.values)))
             return 0
 
 

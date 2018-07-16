@@ -39,18 +39,15 @@ class Relocate:
 
         suffix_link_id, incoming_edge_start_offset, incoming_edge_end_offset = self.tree_graph.get_suffix_link(location.node_id)
         if suffix_link_id is None:
-            # When a node does NOT have a suffix link, it is a newly
-            # created internal node, and will get its link as the value
-            # is processed.  The Ukkonen algorithm guarantees the parent
-            # has a suffix link, since at most one node in entire graph
-            # is missing a suffix link during processing of a value.
+            # A newly created node will NOT have a suffix link, but it's parent will.
+            # Traverse up parent, across to suffix link, then back down
             amount_to_traverse = location.incoming_edge_length()
             parent_id = self.tree_graph.get_parent(location.node_id)
             value_offset = location.start_offset
 
-            # By definition, suffix links decrease depth in tree by one value,
-            # except for root.  Root's suffix link is to itself, so we
-            # have to manually skip the value before traversing back down
+            # Suffix links decrease depth in tree by one value, except for the root node,
+            # which has itself for a suffix link.  In this case, we manually adjust depth
+            # and the amount to traverse
             if self.tree_graph.is_root(parent_id):
                 value_offset += 1
                 amount_to_traverse -= 1
