@@ -1,5 +1,6 @@
 from itertools import count
 
+from suffix_tree_igraph.igraph_strategy import IgraphStrategy
 from suffix_tree_igraph.location import LocationFactory, Location
 from suffix_tree_igraph.relocate import Relocate
 from suffix_tree_igraph.suffix_tree import TreeBuilder
@@ -29,10 +30,11 @@ def ptime(s, t1, t2):
 t1 = time.time()
 random.seed(3)
 testcount = 0
+strategy = IgraphStrategy()
 for rlen in range(1,50):
     print("TEST {}".format(rlen))
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
-    builder = TreeBuilder(data)
+    builder = TreeBuilder(data, strategy)
     builder.process_all_values()
     tree_graph = builder.tree_graph
     s = builder.data_store.value_str(0, rlen)

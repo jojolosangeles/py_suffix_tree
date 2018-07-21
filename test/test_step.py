@@ -79,7 +79,7 @@ def printTree(root, location):
 
 print("START TEST")
 root = builder.root
-location = Location(root, Location.ON_NODE)
+location = Location(root)
 
 verifier = Verifier(root)
 verifier.verify()

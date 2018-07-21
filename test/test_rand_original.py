@@ -2,7 +2,6 @@ from itertools import count
 
 from suffix_tree.location import Location
 from suffix_tree.node_factory import NodeFactory
-from suffix_tree.relocate import Relocate
 from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
 from suffix_tree.visitor.visitor import NodeDFS, SuffixCollector
@@ -11,11 +10,10 @@ import string
 import time
 
 def find(str, node, data_store):
-    location = Location(node, Location.ON_NODE)
+    location = Location(node, data_store)
     location.locate_on_node(node)
-    mover = Relocate(data_store)
     for x in str:
-        found_value = mover.follow_value(location, x)
+        found_value = location.follow_value(x)
         if not found_value:
             raise ValueError("Did not find {} in {}".format(x, str))
     suffix_collector = SuffixCollector()

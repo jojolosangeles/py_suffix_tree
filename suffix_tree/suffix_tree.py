@@ -1,5 +1,4 @@
 from suffix_tree.data_store import DataStore
-from suffix_tree.relocate import Relocate
 from suffix_tree.location import Location
 from itertools import count
 
@@ -12,11 +11,10 @@ class TreeBuilder:
         self.terminal_value = terminal_value
         self.data_store = DataStore()
         self.root = node_factory.create_root()
-        self.relocater = Relocate(self.data_store)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
-        location = Location(self.root, Location.ON_NODE)
+        location = Location(self.root, self.data_store)
         try:
             while True:
                 self.process_value(location, *self.get_next_value_and_offset())
@@ -48,12 +46,11 @@ class TreeBuilder:
             True if there is more processing to be done
             False otherwise
         """
-        found_value = self.relocater.follow_value(location, value)
-        if found_value:
+        if location.follow_value(value):
             return False
         elif location.on_node:
             self.node_factory.create_leaf(location.node, value, offset)
-            found_value = self.relocater.go_to_suffix(location)
+            found_value = location.go_to_suffix()
             if location.on_node:
                 self.node_factory.suffix_linker.link_to(location.node)
             return found_value

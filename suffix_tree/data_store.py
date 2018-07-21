@@ -7,6 +7,9 @@ class DataStore:
     def add(self, value):
         self.values.append(value)
 
+    def get_values(self, start_offset, end_offset):
+        return [value for value in self.values[start_offset:(end_offset+1)]]
+
     def value_str(self, start_offset, end_offset):
         if end_offset == -1:
             return ''.join(self.values[start_offset:])

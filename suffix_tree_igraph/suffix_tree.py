@@ -1,18 +1,17 @@
-from suffix_tree_igraph.data_store import DataStore
-from suffix_tree_igraph.relocate import Relocate
-from suffix_tree_igraph.location import Location, LocationFactory
 from itertools import count
-
-from suffix_tree_igraph.suffix_tree_graph import SuffixTreeGraph, IgraphStrategy
+from suffix_tree_igraph.data_store import DataStore
+from suffix_tree_igraph.location import Location, LocationFactory
+from suffix_tree_igraph.relocate import Relocate
+from suffix_tree_igraph.suffix_tree_graph import SuffixTreeGraph
 
 
 class TreeBuilder:
-    def __init__(self, datasource, terminal_value=-1):
+    def __init__(self, datasource, strategy, terminal_value=-1):
         self.offset_generator = count()
         self.data_generator = ((val,offset) for (val,offset) in zip(datasource,self.offset_generator))
         self.terminal_value = terminal_value
         self.data_store = DataStore()
-        self.tree_graph = SuffixTreeGraph(IgraphStrategy())
+        self.tree_graph = SuffixTreeGraph(strategy)
         self.relocater = Relocate(self.data_store, self.tree_graph)
 
     def process_all_values(self):
