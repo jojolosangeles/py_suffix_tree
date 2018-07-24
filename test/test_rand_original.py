@@ -2,7 +2,6 @@ from itertools import count
 
 from suffix_tree.location import Location
 from suffix_tree.node_factory import NodeFactory
-from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
 from suffix_tree.visitor.visitor import NodeDFS, SuffixCollector
 import random
@@ -30,8 +29,7 @@ random.seed(3)
 testcount = 0
 for rlen in range(1,50):
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
-    suffix_linker = SuffixLinker()
-    builder = TreeBuilder(data, NodeFactory(suffix_linker))
+    builder = TreeBuilder(data, NodeFactory())
     builder.process_all_values()
     s = builder.data_store.value_str(0, rlen)
     #print("S={}".format(s))
