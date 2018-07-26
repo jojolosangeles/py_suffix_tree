@@ -1,7 +1,6 @@
 from itertools import count
 
 from suffix_tree.location import Location
-from suffix_tree.node_factory import NodeFactory
 from suffix_tree.suffix_tree import TreeBuilder
 from suffix_tree.visitor.visitor import NodeDFS, SuffixCollector
 import random
@@ -10,14 +9,13 @@ import time
 
 def find(str, node, data_store):
     location = Location(node, data_store)
-    location.locate_on_node(node)
     for x in str:
         found_value = location.follow_value(x)
         if not found_value:
             raise ValueError("Did not find {} in {}".format(x, str))
     suffix_collector = SuffixCollector()
     nodeDFS = NodeDFS()
-    nodeDFS(suffix_collector, location.node)
+    nodeDFS(suffix_collector, location.ending_node())
     return suffix_collector.suffixes
 
 def ptime(s, t1, t2):
@@ -28,17 +26,18 @@ t1 = time.time()
 random.seed(3)
 testcount = 0
 for rlen in range(1,50):
+    print(rlen)
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
-    builder = TreeBuilder(data, NodeFactory())
+    builder = TreeBuilder(data)
     builder.process_all_values()
     s = builder.data_store.value_str(0, rlen)
-    #print("S={}".format(s))
-    print(rlen)
+    print("S={}".format(s))
     for substrlen in range(1, rlen+1):
         for start_offset,end_offset in zip(count(), range(substrlen-1, rlen)):
             test_str = builder.data_store.value_str(start_offset, end_offset)
-            #print("test_str={}".format(test_str))
+            print("test_str={}".format(test_str))
             result = find(test_str, builder.root, builder.data_store)
+            print(result)
             assert(start_offset in result)
             testcount += 1
     for substrlen in range(1, rlen):

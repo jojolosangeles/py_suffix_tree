@@ -10,8 +10,8 @@ class NodeDFS:
     def __call__(self, visitor, node, final_id=0):
         visitor.visit(node, final_id)
         if not node.is_leaf():
-            for child in node.children:
-                self(visitor, node.children[child], final_id)
+            for edge_key in node.children:
+                self(visitor, node.children[edge_key].adjacent_node, final_id)
         visitor.after_children_visited(node)
 
 class SuffixCollector(Visitor):
