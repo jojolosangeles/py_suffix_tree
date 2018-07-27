@@ -94,6 +94,7 @@ class Location:
             edge = self.next_edge_at(offset)
             if edge.covers(amount_to_traverse):
                 self.next_edge_offset = amount_to_traverse
+                self.edge = edge
             else:
                 amount_to_traverse -= edge.edge_length
                 self.skip_count_down(edge.adjacent_node, offset + edge.edge_length, amount_to_traverse)
