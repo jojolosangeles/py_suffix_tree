@@ -56,14 +56,6 @@ class InternalNode(NodeWithChildren):
     def is_internal(self):
         return True
 
-    def incoming_edge_covers(self, length):
-        return self.incoming_edge_length() >= length
-
-    def incoming_edge_length(self):
-        return self.incoming_edge_end_offset - self.incoming_edge_start_offset + 1
-
-    def offset_is_on_node(self, offset):
-        return self.incoming_edge_end_offset == offset
 
 class RootNode(NodeWithChildren):
     def __init__(self, id):
@@ -80,9 +72,6 @@ class LeafNode(Node):
         self.parent = parent
         self.parent_edge = parent_edge
         self.suffix_offset = suffix_offset
-
-    def incoming_edge_covers(self, length):
-        return True
 
     def incoming_edge_length(self):
         raise AssertionError

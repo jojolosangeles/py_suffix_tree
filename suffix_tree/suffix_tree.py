@@ -37,28 +37,14 @@ class TreeBuilder:
         return value,offset
 
     def finish(self, location):
-        value = self.terminal_value
-        return self.process_value(location, value, self.last_offset + 1)
+        self.process_value(location, self.terminal_value, self.last_offset + 1)
 
     def process_value(self, location, value, offset):
         continue_processing_value = True
-        while continue_processing_value:
-            continue_processing_value = self.process_value_at_location(location, value, offset)
-
-    def process_value_at_location(self, location, value, offset):
-        """Process the value at the given location.
-
-        Return:
-            True if there is more processing to be done
-            False otherwise
-        """
-        if not location.follow_value(value):
-            new_internal_node = self.node_factory.create_leaf(location, value, offset)
-            self.suffix_linker.needs_suffix_link(new_internal_node)
-            found_value = location.go_to_suffix()
+        while continue_processing_value and not location.follow_value(value):
+            self.suffix_linker.needs_suffix_link(self.node_factory.create_leaf(location, value, offset))
+            continue_processing_value = location.go_to_suffix()
             if location.next_edge_offset == 0:
                 self.suffix_linker.link_to(location.node)
-            return found_value
-        else:
-            return False
+
 

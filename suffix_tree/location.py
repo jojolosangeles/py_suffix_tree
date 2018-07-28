@@ -1,9 +1,5 @@
 """Location within a suffix tree."""
-from suffix_tree.node import Node
-
-
 class Location:
-    ON_NODE = -1
 
     """A location within a suffix tree, either on a node or on an edge."""
     def __init__(self, node, data_store):

@@ -13,7 +13,7 @@ def ptime(s, t1, t2):
 
 data = open(sys.argv[1], "r").read()
 data2 = data[:1000000]
-builder = TreeBuilder((c for c in data2), NodeFactory())
+builder = TreeBuilder((c for c in data2))
 t1 = time.time()
 builder.process_all_values()
 root_node = builder.root

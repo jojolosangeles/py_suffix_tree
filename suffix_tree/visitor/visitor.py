@@ -46,13 +46,13 @@ class LeafCountVisitor:
 
     def after_children_visited(self, node):
         if not node.is_leaf():
-            node.leaf_count = sum([node.children[child].leaf_count for child in node.children])
+            node.leaf_count = sum([node.children[child].adjacent_node.leaf_count for child in node.children])
 
 class DepthVisitor(Visitor):
     def visit(self, node, final_id):
         if node.is_root():
             node.depth = 0
         elif node.is_leaf():
-            node.depth = final_id - node.incoming_edge_start_offset + node.parent.depth
+            node.depth = final_id - node.parent_edge.start_offset + node.parent.depth
         else:
-            node.depth = node.incoming_edge_length() + node.parent.depth
+            node.depth = node.parent_edge.edge_length + node.parent.depth
