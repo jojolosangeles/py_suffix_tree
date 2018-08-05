@@ -1,16 +1,53 @@
 """Node within a suffix tree."""
+incoming_edge_start_offsets = []
+incoming_edge_lengths = []
+
+parent_node_ids = []
+
+
+def node_guarantee(offset):
+    missing = offset - len(parent_node_ids) + 1
+    while missing > 0:
+        parent_node_ids.append(0)
+        missing -= 1
+
+def save_node_parent(node_id, parent_node_id):
+    node_guarantee(max(node_id, parent_node_id))
+    parent_node_ids[node_id] = parent_node_id
+
+def edge_guarantee(offset):
+    missing = offset - len(incoming_edge_lengths) + 1
+    while missing > 0:
+        incoming_edge_lengths.append(0)
+        incoming_edge_start_offsets.append(0)
+        missing -= 1
+
+
+def edge_save(id, start_offset, edge_length):
+    edge_guarantee(id)
+    incoming_edge_start_offsets[id] = start_offset
+    incoming_edge_lengths[id] = edge_length
 
 class Edge:
     def __init__(self, start_offset, edge_length, adjacent_node):
         self.start_offset = start_offset
         self.edge_length = edge_length
         self.adjacent_node = adjacent_node
+        edge_save(adjacent_node.id, start_offset, edge_length)
 
     def covers(self, length):
         return self.edge_length > length or self.edge_length < 0
 
 class Node:
     """Node represents an offset in a sequence of values."""
+
+    @classmethod
+    def incoming_edge_start_offset(cls, id):
+        return incoming_edge_start_offsets[id]
+
+    @classmethod
+    def incoming_edge_length(cls, id):
+        return incoming_edge_lengths[id]
 
     def __init__(self, id):
         self.id = id
@@ -28,6 +65,10 @@ class NodeWithChildren(Node):
     def __init__(self, id, children):
         super().__init__(id)
         self.children = children
+        self.children_ids = {}
+        if len(children) > 0:
+            for x in children:
+                self.children_ids[x] = self.children[x].adjacent_node.id
 
     def has_child_value(self, value):
         return value in self.children
@@ -37,15 +78,16 @@ class InternalNode(NodeWithChildren):
 
     """Node represents an offset in a sequence of values."""
 
-    def __init__(self, id, parent_edge, children):
+    def __init__(self, id, parent_node_id, parent_edge, children):
         super().__init__(id, children)
+        save_node_parent(id, parent_node_id)
         self.parent_edge = parent_edge
         self.suffix_link = None
 
     def get_suffix_traversal_info(self):
         parent = self.parent
-        value_offset = self.parent_edge.start_offset
-        amount_to_traverse = self.parent_edge.edge_length
+        value_offset = incoming_edge_start_offsets[self.id]
+        amount_to_traverse = incoming_edge_lengths[self.id]
         if parent.is_root():
             amount_to_traverse -= 1
             value_offset += 1
@@ -70,6 +112,7 @@ class LeafNode(Node):
         self.parent = parent
         self.parent_edge = parent_edge
         self.suffix_offset = suffix_offset
+        save_node_parent(id, parent.id)
 
     def is_leaf(self):
         return True

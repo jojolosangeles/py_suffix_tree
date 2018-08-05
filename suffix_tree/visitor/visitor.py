@@ -1,3 +1,5 @@
+from suffix_tree.node import Node
+
 
 class Visitor:
     def visit(self, node):
@@ -53,6 +55,6 @@ class DepthVisitor(Visitor):
         if node.is_root():
             node.depth = 0
         elif node.is_leaf():
-            node.depth = final_id - node.parent_edge.start_offset + node.parent.depth
+            node.depth = Node.incoming_edge_start_offset(node.id) + node.parent.depth
         else:
-            node.depth = node.parent_edge.edge_length + node.parent.depth
+            node.depth = Node.incoming_edge_length(node.id) + node.parent.depth

@@ -97,9 +97,8 @@ class Location:
     def __repr__(self):
         locstr = "on Node"
         if self.next_edge_offset > 0:
-            locstr = "on Edge"
-        return "node({}), {}".\
-                format(self.node.id, locstr)
+            locstr = "on Edge, offset {}".format(self.next_edge_offset)
+        return "node({}), {}".format(self.node.id, locstr)
 
 
 
