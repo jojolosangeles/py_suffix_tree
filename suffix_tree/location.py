@@ -14,7 +14,7 @@ class Location:
         if self.next_edge_offset == 0:
             return self.node
         else:
-            return self.edge.adjacent_node
+            return self._target_node
 
     def locate_on_node(self, node):
         self.node = node
@@ -26,16 +26,19 @@ class Location:
         else:
             return self.edge
 
-    def next_edge_at(self, offset):
+    def _next_edge_at(self, offset):
         key = self.data_store.value_at(offset)
         node_id = self.node.children_ids[key]
+        self._target_edge_length = Node.incoming_edge_length(node_id)
+        self._target_start_offset = Node.incoming_edge_start_offset(node_id)
+        self._target_node = Node.get(node_id)
         Node.fill(node_id, self.my_edge)
         return self.my_edge
 
     def next_data_offset(self):
         self.next_edge_offset += 1
-        if self.next_edge_offset == self.edge.edge_length:
-            self.node = self.edge.adjacent_node
+        if self.next_edge_offset == self._target_edge_length:
+            self.node = self._target_node
             self.next_edge_offset = 0
 
     def follow_value(self, value):
@@ -78,8 +81,9 @@ class Location:
         """
         self.locate_on_node(node)
         if amount_to_traverse > 0:
-            edge = self.next_edge_at(offset)
-            if edge.covers(amount_to_traverse):
+            edge = self._next_edge_at(offset)
+            if self._target_edge_length > amount_to_traverse or self._target_edge_length < 0:
+            #if edge.covers(amount_to_traverse):
                 self.next_edge_offset = amount_to_traverse
                 self.edge = edge
             else:
@@ -87,19 +91,24 @@ class Location:
                 self.skip_count_down(edge.adjacent_node, offset + edge.edge_length, amount_to_traverse)
 
     def _follow_edge_value(self, value):
-        result = self.data_store.value_at(self.edge.start_offset + self.next_edge_offset) == value
+        result = self.data_store.value_at(self._target_start_offset + self.next_edge_offset) == value
+        #result = self.data_store.value_at(self.edge.start_offset + self.next_edge_offset) == value
         if result:
             self.next_data_offset()
         return result
 
     def _locate_after_first_edge_value(self, value):
         self.edge = self.node.children[value]
-        if self.edge.edge_length == 1:
-            self.node = self.edge.adjacent_node
+        child_node_id = self.node.children_ids[value]
+        self._target_edge_length = Node.incoming_edge_length(child_node_id)
+        self._target_start_offset = Node.incoming_edge_start_offset(child_node_id)
+        if self._target_edge_length == 1:
+            self.node = Node.get(child_node_id)
             self.next_edge_offset = 0
         else:
             self.next_edge_offset = 1
             self.value_key = value
+            self._target_node = Node.get(child_node_id)
 
         return True
 
