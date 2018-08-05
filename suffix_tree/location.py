@@ -1,10 +1,14 @@
 """Location within a suffix tree."""
+from suffix_tree.node import Edge, Node
+
+
 class Location:
 
     """A location within a suffix tree, either on a node or on an edge."""
     def __init__(self, node, data_store):
         self.data_store = data_store
         self.locate_on_node(node)
+        self.my_edge = Edge(0, 0, None)
 
     def nearest_node_down(self):
         if self.next_edge_offset == 0:
@@ -16,13 +20,17 @@ class Location:
         self.node = node
         self.next_edge_offset = 0
 
-    def locate_on_edge(self, node, offset):
-        self.node = node
-        self.data_offset = offset
-        return True
+    def edge_copy(self):
+        if self.edge == self.my_edge:
+            return self.my_edge.copy()
+        else:
+            return self.edge
 
     def next_edge_at(self, offset):
-        return self.node.children[self.data_store.value_at(offset)]
+        key = self.data_store.value_at(offset)
+        node_id = self.node.children_ids[key]
+        Node.fill(node_id, self.my_edge)
+        return self.my_edge
 
     def next_data_offset(self):
         self.next_edge_offset += 1
@@ -92,6 +100,7 @@ class Location:
         else:
             self.next_edge_offset = 1
             self.value_key = value
+
         return True
 
     def __repr__(self):
