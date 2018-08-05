@@ -10,8 +10,6 @@ class Edge:
         return self.edge_length > length or self.edge_length < 0
 
 class Node:
-    UNDEFINED_OFFSET = -1
-
     """Node represents an offset in a sequence of values."""
 
     def __init__(self, id):
@@ -72,12 +70,6 @@ class LeafNode(Node):
         self.parent = parent
         self.parent_edge = parent_edge
         self.suffix_offset = suffix_offset
-
-    def incoming_edge_length(self):
-        raise AssertionError
-
-    def offset_is_on_node(self, offset):
-        return False
 
     def is_leaf(self):
         return True
