@@ -9,7 +9,6 @@ class Location:
         self.data_store = data_store
         self.locate_on_node(node)
         self.my_edge = Edge(0, 0, None)
-        self.edge = None
 
     def nearest_node_down(self):
         if self.next_edge_offset == 0:
@@ -23,10 +22,6 @@ class Location:
 
     def edge_copy(self):
         return Edge(self._target_start_offset, self._target_edge_length, self._target_node)
-        #if self.edge == None or self.edge == self.my_edge:
-        #    return self.my_edge.copy()
-        #else:
-        #    return self.edge
 
     def _next_edge_at(self, offset):
         key = self.data_store.value_at(offset)
@@ -34,8 +29,6 @@ class Location:
         self._target_edge_length = Node.incoming_edge_length(node_id)
         self._target_start_offset = Node.incoming_edge_start_offset(node_id)
         self._target_node = Node.get(node_id)
-        Node.fill(node_id, self.my_edge)
-        return self.my_edge
 
     def next_data_offset(self):
         self.next_edge_offset += 1
@@ -83,7 +76,7 @@ class Location:
         """
         self.locate_on_node(node)
         if amount_to_traverse > 0:
-            edge = self._next_edge_at(offset)
+            self._next_edge_at(offset)
             if self._target_edge_length > amount_to_traverse or self._target_edge_length < 0:
                 self.next_edge_offset = amount_to_traverse
             else:
