@@ -8,7 +8,6 @@ class Location:
     def __init__(self, node, data_store):
         self.data_store = data_store
         self.locate_on_node(node)
-        self.my_edge = Edge(0, 0, None)
 
     def nearest_node_down(self):
         if self.next_edge_offset == 0:
@@ -19,9 +18,6 @@ class Location:
     def locate_on_node(self, node):
         self.node = node
         self.next_edge_offset = 0
-
-    def edge_copy(self):
-        return Edge(self._target_start_offset, self._target_edge_length, self._target_node)
 
     def _next_edge_at(self, offset):
         key = self.data_store.value_at(offset)

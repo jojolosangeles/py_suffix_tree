@@ -33,6 +33,11 @@ def edge_save(id, start_offset, edge_length):
     incoming_edge_start_offsets[id] = start_offset
     incoming_edge_lengths[id] = edge_length
 
+def edge_adjust(id, amount):
+    incoming_edge_start_offsets[id] += amount
+    if incoming_edge_lengths[id] > 0:
+        incoming_edge_lengths[id] -= amount
+
 class Edge:
     def __init__(self, start_offset, edge_length, adjacent_node):
         self.start_offset = start_offset
