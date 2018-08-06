@@ -41,6 +41,10 @@ class Edge:
         if adjacent_node != None:
             edge_save(adjacent_node.id, start_offset, edge_length)
 
+    def shrink_by(self, amount):
+        self.start_offset += amount
+        self.edge_length -= amount
+
     def copy(self):
         return Edge(self.start_offset, self.edge_length, self.adjacent_node)
 

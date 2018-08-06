@@ -9,6 +9,7 @@ class Location:
         self.data_store = data_store
         self.locate_on_node(node)
         self.my_edge = Edge(0, 0, None)
+        self.edge = None
 
     def nearest_node_down(self):
         if self.next_edge_offset == 0:
@@ -21,10 +22,11 @@ class Location:
         self.next_edge_offset = 0
 
     def edge_copy(self):
-        if self.edge == self.my_edge:
-            return self.my_edge.copy()
-        else:
-            return self.edge
+        return Edge(self._target_start_offset, self._target_edge_length, self._target_node)
+        #if self.edge == None or self.edge == self.my_edge:
+        #    return self.my_edge.copy()
+        #else:
+        #    return self.edge
 
     def _next_edge_at(self, offset):
         key = self.data_store.value_at(offset)
@@ -83,22 +85,18 @@ class Location:
         if amount_to_traverse > 0:
             edge = self._next_edge_at(offset)
             if self._target_edge_length > amount_to_traverse or self._target_edge_length < 0:
-            #if edge.covers(amount_to_traverse):
                 self.next_edge_offset = amount_to_traverse
-                self.edge = edge
             else:
-                amount_to_traverse -= edge.edge_length
-                self.skip_count_down(edge.adjacent_node, offset + edge.edge_length, amount_to_traverse)
+                amount_to_traverse -= self._target_edge_length
+                self.skip_count_down(self._target_node, offset + self._target_edge_length, amount_to_traverse)
 
     def _follow_edge_value(self, value):
         result = self.data_store.value_at(self._target_start_offset + self.next_edge_offset) == value
-        #result = self.data_store.value_at(self.edge.start_offset + self.next_edge_offset) == value
         if result:
             self.next_data_offset()
         return result
 
     def _locate_after_first_edge_value(self, value):
-        self.edge = self.node.children[value]
         child_node_id = self.node.children_ids[value]
         self._target_edge_length = Node.incoming_edge_length(child_node_id)
         self._target_start_offset = Node.incoming_edge_start_offset(child_node_id)

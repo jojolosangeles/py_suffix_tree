@@ -15,7 +15,7 @@ class NodeFactory:
         if location.next_edge_offset > 0:
             # bad assumption, location.edge is "owned" by a node, can be passed around
             # creating problem for changing edge to be singleton, edge_copy() creates copy if necessary
-            leaf_parent = self._split_edge(location.node, location.edge_copy(), location.next_edge_offset)
+            leaf_parent = self._split_edge(location.node, location._target_node, location._target_start_offset, location.edge_copy(), location.next_edge_offset)
             location.node = leaf_parent
             location.next_edge_offset = 0
         return self._create_leaf(location.node, value, offset)
@@ -27,18 +27,15 @@ class NodeFactory:
         node.children_ids[value] = new_leaf.id
         return node
 
-    def _split_edge(self, node, original_edge, next_edge_offset):
+    def _split_edge(self, parent_node, target_node, target_start_offset, original_edge, next_edge_offset):
         # modify the original_edge
         new_internal_node = InternalNode(next(self.id_generator), {})
-        original_start_offset = original_edge.start_offset
-        original_child_node_id = original_edge.adjacent_node.id
-        Node.save_parent(new_internal_node.id, node.id)
-        Node.save_parent(original_child_node_id, new_internal_node.id)
-        new_internal_parent_edge = Edge(original_start_offset, next_edge_offset, new_internal_node)
-        original_edge.start_offset += next_edge_offset
-        original_edge.edge_length -= next_edge_offset
-        node.children[self.data_store.value_at(original_start_offset)] = new_internal_parent_edge
-        node.children_ids[self.data_store.value_at(original_start_offset)] = new_internal_parent_edge.adjacent_node.id
+        Node.save_parent(new_internal_node.id, parent_node.id)
+        Node.save_parent(target_node.id, new_internal_node.id)
+        new_internal_parent_edge = Edge(target_start_offset, next_edge_offset, new_internal_node)
+        original_edge.shrink_by(next_edge_offset)
+        parent_node.children[self.data_store.value_at(target_start_offset)] = new_internal_parent_edge
+        parent_node.children_ids[self.data_store.value_at(target_start_offset)] = new_internal_parent_edge.adjacent_node.id
         new_internal_node.children[self.data_store.value_at(original_edge.start_offset)] = original_edge
         new_internal_node.children_ids[self.data_store.value_at(original_edge.start_offset)] = original_edge.adjacent_node.id
 
