@@ -43,7 +43,8 @@ class Edge:
 
     def shrink_by(self, amount):
         self.start_offset += amount
-        self.edge_length -= amount
+        if self.edge_length > 0:
+            self.edge_length -= amount
 
     def copy(self):
         return Edge(self.start_offset, self.edge_length, self.adjacent_node)
@@ -80,9 +81,6 @@ class Node:
     def save_parent(cls, node_id, parent_node_id):
         parent_node_ids[node_id] = parent_node_id
 
-    def check_child_ids(self):
-        pass
-
     def __init__(self, id):
         self.id = id
         save_node(id, self)
@@ -97,28 +95,20 @@ class Node:
         return True
 
 class NodeWithChildren(Node):
-    def __init__(self, id, children):
+    def __init__(self, id):
         super().__init__(id)
-        self.children = children
         self.children_ids = {}
-        if len(children) > 0:
-            for x in children:
-                self.children_ids[x] = self.children[x].adjacent_node.id
-
-    def check_child_ids(self):
-        for x in self.children:
-            assert(self.children[x].adjacent_node.id == self.children_ids[x])
 
     def has_child_value(self, value):
-        return value in self.children
+        return value in self.children_ids
 
 class InternalNode(NodeWithChildren):
     UNDEFINED_OFFSET = -1
 
     """Node represents an offset in a sequence of values."""
 
-    def __init__(self, id, children):
-        super().__init__(id, children)
+    def __init__(self, id):
+        super().__init__(id)
         self.suffix_link = None
 
     def get_suffix_traversal_info(self):
@@ -136,7 +126,7 @@ class InternalNode(NodeWithChildren):
 
 class RootNode(NodeWithChildren):
     def __init__(self, id):
-        super().__init__(id, {})
+        super().__init__(id)
         self.suffix_link = self
 
     def is_root(self):

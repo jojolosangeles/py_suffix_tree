@@ -43,12 +43,9 @@ for rlen in range(1,50):
     for substrlen in range(1, rlen+1):
         for start_offset,end_offset in zip(count(), range(substrlen-1, rlen)):
             test_str = builder.data_store.value_str(start_offset, end_offset)
-            print("test_str={}".format(test_str))
+            #print("test_str={}".format(test_str))
             result = find(test_str, builder.root, builder.data_store)
-            print(result)
-            if not start_offset in result:
-                print("HA!")
-                result = find(test_str, builder.root, builder.data_store)
+            #print(result)
             assert(start_offset in result)
             testcount += 1
     for substrlen in range(1, rlen):

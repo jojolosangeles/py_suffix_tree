@@ -93,6 +93,7 @@ class Location:
         child_node_id = self.node.children_ids[value]
         self._target_edge_length = Node.incoming_edge_length(child_node_id)
         self._target_start_offset = Node.incoming_edge_start_offset(child_node_id)
+        node = Node.get(child_node_id)
         if self._target_edge_length == 1:
             self.node = Node.get(child_node_id)
             self.next_edge_offset = 0

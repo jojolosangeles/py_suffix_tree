@@ -35,7 +35,7 @@ class NodeStr:
 
     def tree_str(self, node):
         return_strings = [node.__repr__()]
-        return self.indent(return_strings, node.children, "  ")
+        return self.indent(return_strings, node.children_ids, "  ")
 
     def suffix_link_str(self, node):
         if node.suffix_link == None:
@@ -61,10 +61,10 @@ class NodeStr:
     def edge_str(self, node):
         return self.data_store.value_str(node.incoming_edge_start_offset, node.incoming_edge_end_offset)
 
-    def indent(self, strings, children, prefix):
-        if children != None:
-            for child in children.values():
+    def indent(self, strings, children_ids, prefix):
+        if children_ids != None:
+            for child in children_ids.values():
                 strings.append(prefix + self.node_str(child))
-                self.indent(strings, child.children, "  " + prefix)
+                self.indent(strings, child.children_ids, "  " + prefix)
         return "\n".join(strings)
 
