@@ -4,6 +4,7 @@ incoming_edge_lengths = []
 
 parent_node_ids = []
 node_by_id = []
+suffix_offsets = []
 
 def save_node(id, node):
     node_guarantee(id)
@@ -14,6 +15,7 @@ def node_guarantee(offset):
     while missing > 0:
         parent_node_ids.append(0)
         node_by_id.append(0)
+        suffix_offsets.append(-1)
         missing -= 1
 
 def save_node_parent(node_id, parent_node_id):
@@ -38,24 +40,18 @@ def edge_adjust(id, amount):
     if incoming_edge_lengths[id] > 0:
         incoming_edge_lengths[id] -= amount
 
-class Edge:
-    def __init__(self, start_offset, edge_length, adjacent_node):
-        self.start_offset = start_offset
-        self.edge_length = edge_length
-        self.adjacent_node = adjacent_node
-        if adjacent_node != None:
-            edge_save(adjacent_node.id, start_offset, edge_length)
+class SingleLeaf:
+    def __init__(self):
+        self.id = 0
+        self.suffix_offset = 0
 
-    def shrink_by(self, amount):
-        self.start_offset += amount
-        if self.edge_length > 0:
-            self.edge_length -= amount
+    def is_root(self):
+        return False
 
-    def copy(self):
-        return Edge(self.start_offset, self.edge_length, self.adjacent_node)
+    def is_leaf(self):
+        return True
 
-    def covers(self, length):
-        return self.edge_length > length or self.edge_length < 0
+singleLeaf = SingleLeaf()
 
 class Node:
     """Node represents an offset in a sequence of values."""
@@ -70,6 +66,11 @@ class Node:
 
     @classmethod
     def get(cls, id):
+        global singleLeaf
+        if Node.is_leaf_id(id):
+            singleLeaf.id = id
+            singleLeaf.suffix_offset = suffix_offsets[id]
+            return singleLeaf
         return node_by_id[id]
 
     @classmethod
@@ -83,8 +84,19 @@ class Node:
         return node_by_id[parent_node_ids[node_id]]
 
     @classmethod
+    def save_new_leaf_info(cls, node_id, parent_node_id, suffix_offset):
+        node_guarantee(node_id)
+        parent_node_ids[node_id] = parent_node_id
+        suffix_offsets[parent_node_id] = -1
+        suffix_offsets[node_id] = suffix_offset
+
+    @classmethod
     def save_parent(cls, node_id, parent_node_id):
         parent_node_ids[node_id] = parent_node_id
+
+    @classmethod
+    def is_leaf_id(cls, node_id):
+        return suffix_offsets[node_id] >= 0
 
     def __init__(self, id):
         self.id = id
@@ -137,14 +149,3 @@ class RootNode(NodeWithChildren):
     def is_root(self):
         return True
 
-
-class LeafNode(Node):
-    def __init__(self, id, suffix_offset):
-        super().__init__(id)
-        self.suffix_offset = suffix_offset
-
-    def is_leaf(self):
-        return True
-
-    def has_child_value(self, value):
-        return False

@@ -21,6 +21,7 @@ class SuffixCollector(Visitor):
         self.suffixes = []
 
     def visit(self, node, final_id=0):
+        assert(node.is_leaf() == Node.is_leaf_id(node.id))
         if node.is_leaf():
             self.suffixes.append(node.suffix_offset)
 

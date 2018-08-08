@@ -1,4 +1,4 @@
-from suffix_tree.node import RootNode, LeafNode, InternalNode, Edge, edge_save, Node, edge_adjust
+from suffix_tree.node import RootNode, InternalNode, edge_save, Node, edge_adjust
 from itertools import count
 
 
@@ -13,19 +13,18 @@ class NodeFactory:
 
     def create_leaf(self, location, value, offset):
         if location.next_edge_offset > 0:
-            # bad assumption, location.edge is "owned" by a node, can be passed around
-            # creating problem for changing edge to be singleton, edge_copy() creates copy if necessary
-            leaf_parent = self._split_edge(location.node, location._target_node, location._target_start_offset,
-                                           location.next_edge_offset)
+            leaf_parent = self._split_edge(location.node, location._target_node,
+                                           location._target_start_offset, location.next_edge_offset)
             location.node = leaf_parent
             location.next_edge_offset = 0
         return self._create_leaf(location.node, value, offset)
 
     def _create_leaf(self, node, value, offset):
-        new_leaf = LeafNode(next(self.id_generator), next(self.suffix_generator))
-        Node.save_parent(new_leaf.id, node.id)
-        node.children_ids[value] = new_leaf.id
-        edge_save(new_leaf.id, offset, -1)
+        new_leaf_id = next(self.id_generator)
+        new_suffix_offset =  next(self.suffix_generator)
+        Node.save_new_leaf_info(new_leaf_id, node.id, new_suffix_offset)
+        node.children_ids[value] = new_leaf_id
+        edge_save(new_leaf_id, offset, -1)
         return node
 
     def _split_edge(self, parent_node, target_node, target_start_offset, next_edge_offset):

@@ -1,5 +1,5 @@
 """Location within a suffix tree."""
-from suffix_tree.node import Edge, Node
+from suffix_tree.node import Node
 
 
 class Location:
