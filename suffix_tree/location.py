@@ -54,7 +54,7 @@ class Location:
                 True if the location changed
                 False otherwise
         """
-        if self.node.is_root():
+        if self.node.id == Node.ROOT_NODE_ID:
             return False
 
         if self.node.suffix_link is None:

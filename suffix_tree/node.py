@@ -1,7 +1,7 @@
 """Node within a suffix tree."""
 incoming_edge_start_offsets = []
 incoming_edge_lengths = []
-
+node_suffix_link = []
 parent_node_ids = []
 node_by_id = []
 suffix_offsets = []
@@ -15,6 +15,7 @@ def node_guarantee(offset):
     while missing > 0:
         parent_node_ids.append(0)
         node_by_id.append(0)
+        node_suffix_link.append(-1)
         suffix_offsets.append(-1)
         missing -= 1
 
@@ -45,9 +46,6 @@ class SingleLeaf:
         self.id = 0
         self.suffix_offset = 0
 
-    def is_root(self):
-        return False
-
     def is_leaf(self):
         return True
 
@@ -55,6 +53,7 @@ singleLeaf = SingleLeaf()
 
 class Node:
     """Node represents an offset in a sequence of values."""
+    ROOT_NODE_ID = 0
 
     @classmethod
     def incoming_edge_start_offset(cls, id):
@@ -98,6 +97,10 @@ class Node:
     def is_leaf_id(cls, node_id):
         return suffix_offsets[node_id] >= 0
 
+    @classmethod
+    def suffix(cls, node_id):
+        return suffix_offsets[node_id]
+
     def __init__(self, id):
         self.id = id
         save_node(id, self)
@@ -132,7 +135,7 @@ class InternalNode(NodeWithChildren):
         parent = node_by_id[parent_node_ids[self.id]]
         value_offset = incoming_edge_start_offsets[self.id]
         amount_to_traverse = incoming_edge_lengths[self.id]
-        if parent.is_root():
+        if parent.id == Node.ROOT_NODE_ID:
             amount_to_traverse -= 1
             value_offset += 1
         return parent.suffix_link, value_offset, amount_to_traverse
@@ -141,11 +144,27 @@ class InternalNode(NodeWithChildren):
         return True
 
 
+class SuffixLinker:
+
+    def __init__(self):
+        self.node_missing_suffix_link = None
+
+    def needs_suffix_link(self, node):
+        """Any newly created internal node needs a suffix link.  If a previously
+        created node is missing its suffix link, then it just points
+        to this node."""
+        self.link_to(node)
+        self.node_missing_suffix_link = node
+
+    def link_to(self, node):
+        if self.node_missing_suffix_link != None:
+            self.node_missing_suffix_link.suffix_link = node
+        self.node_missing_suffix_link = None
+
 class RootNode(NodeWithChildren):
     def __init__(self, id):
         super().__init__(id)
         self.suffix_link = self
+        node_suffix_link[0] = 0
 
-    def is_root(self):
-        return True
 

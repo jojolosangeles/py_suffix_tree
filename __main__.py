@@ -2,8 +2,6 @@ import sys
 
 import time
 
-from suffix_tree.node_factory import NodeFactory
-from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
 from suffix_tree.visitor.visitor import LeafCountVisitor, NodeDFS, DepthVisitor
 

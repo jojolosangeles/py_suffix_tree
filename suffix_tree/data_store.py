@@ -24,22 +24,3 @@ class DataStore:
             return 0
 
 
-
-class NodeStr:
-    """Create string forms of a node or tree.
-
-    Not using __repr__ or __str__ because this nodes only store value offsets,
-    actual values are in DataStore instance"""
-    def __init__(self, data_store):
-        self.data_store = data_store
-
-    def suffix_link_str(self, node):
-        if node.suffix_link == None:
-            return "=> needs suffix link"
-        else:
-            return "=> n{}".format(node.suffix_link.id)
-
-    def edge_str(self, node):
-        return self.data_store.value_str(node.incoming_edge_start_offset, node.incoming_edge_end_offset)
-
-

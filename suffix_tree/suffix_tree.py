@@ -3,7 +3,7 @@ from suffix_tree.location import Location
 from itertools import count
 
 from suffix_tree.node_factory import NodeFactory
-from suffix_tree.suffix_linker import SuffixLinker
+from suffix_tree.node import SuffixLinker
 
 
 class TreeBuilder:
