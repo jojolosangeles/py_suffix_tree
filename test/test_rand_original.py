@@ -1,6 +1,8 @@
 from itertools import count
 
 from suffix_tree.location import Location
+from suffix_tree.node_factory import NodeFactory
+from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
 from suffix_tree.visitor.visitor import NodeDFS, SuffixCollector, DepthVisitor
 import random
@@ -15,7 +17,7 @@ def find(str, node, data_store):
             raise ValueError("Did not find {} in {}".format(x, str))
     suffix_collector = SuffixCollector()
     nodeDFS = NodeDFS()
-    nodeDFS(suffix_collector, location.nearest_node_down())
+    nodeDFS(suffix_collector, location.node)
     return suffix_collector.suffixes
 
 def ptime(s, t1, t2):
@@ -33,7 +35,7 @@ testcount = 0
 for rlen in range(1,50):
     print(rlen)
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
-    builder = TreeBuilder(data)
+    builder = TreeBuilder(data, NodeFactory(SuffixLinker()))
     builder.process_all_values()
     depth_visit(builder.root, builder.last_offset)
 
