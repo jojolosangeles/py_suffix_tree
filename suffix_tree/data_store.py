@@ -1,8 +1,11 @@
 
 class DataStore:
-    """Stores values as they are encountered, provides access to previous values"""
+    """Stores values processed, provides access to previously processed values"""
     def __init__(self):
         self.values = []
+
+    def data_len(self):
+        return len(self.values)
 
     def add(self, value):
         self.values.append(value)
