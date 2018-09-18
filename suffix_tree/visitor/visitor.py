@@ -1,3 +1,5 @@
+from suffix_tree.node import Node
+
 
 class Visitor:
     def visit(self, node):
@@ -15,8 +17,8 @@ class NodeDFS:
         visitor.after_children_visited(node)
 
 class SuffixCollector(Visitor):
-    def __init__(self):
-        self.suffixes = []
+    def __init__(self, result):
+        self.suffixes = result
 
     def visit(self, node, final_id=0):
         if node.is_leaf():
@@ -56,3 +58,13 @@ class DepthVisitor(Visitor):
             node.depth = final_id - node.incoming_edge_start_offset + node.parent.depth
         else:
             node.depth = node.incoming_edge_length() + node.parent.depth
+
+class OffsetAdjustingVisitor(Visitor):
+    def __init__(self, starting_offset):
+        self.starting_offset = starting_offset
+
+    def visit(self, node, final_id):
+        if node.incoming_edge_start_offset != Node.UNDEFINED_OFFSET:
+            node.incoming_edge_start_offset += self.starting_offset
+        if node.incoming_edge_end_offset != Node.UNDEFINED_OFFSET:
+            node.incoming_edge_end_offset += self.starting_offset

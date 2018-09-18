@@ -2,6 +2,44 @@ from suffix_tree.data_store import DataStore
 from suffix_tree.location import Location
 from itertools import count
 
+from suffix_tree.visitor.visitor import OffsetAdjustingVisitor, NodeDFS, SuffixCollector
+
+
+class SuffixTree:
+    def __init__(self, root, data_store, final_suffix):
+        self.root = root
+        self.data_store = data_store
+        self.final_suffix = final_suffix
+        self.final_string = self.data_store.value_str(final_suffix, data_store.data_len())
+
+    def uDO_set_start_offset(self, start_offset):
+        dfs = NodeDFS()
+        dfs(OffsetAdjustingVisitor(start_offset), self.root)
+
+    def find_in_str(self, target_str, remaining_str):
+        result = []
+        start_offset = self.final_suffix
+        while len(remaining_str) >= len(target_str):
+            if target_str in remaining_str:
+                found_index = remaining_str.index(target_str)
+                result.append(found_index + start_offset)
+                start_offset += found_index + 1
+                remaining_str = remaining_str[found_index + 1:]
+            else:
+                break
+        return result
+
+    def find(self, target_str):
+        result = self.find_in_str(target_str, self.final_string)
+        location = Location(self.root, self.data_store)
+        suffix_collector = SuffixCollector(result)
+        for x in target_str:
+            found_value = location.follow_value(x)
+            if not found_value:
+                return result
+        nodeDFS = NodeDFS()
+        nodeDFS(suffix_collector, location.node)
+        return suffix_collector.suffixes
 
 class TreeBuilder:
     def __init__(self, datasource, node_factory, terminal_value=-1):
@@ -11,6 +49,9 @@ class TreeBuilder:
         self.terminal_value = terminal_value
         self.data_store = DataStore()
         self.root = node_factory.create_root()
+
+    def get_tree(self):
+        return SuffixTree(self.root, self.data_store, self.final_suffix_offset)
 
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
@@ -31,8 +72,8 @@ class TreeBuilder:
         return value,offset
 
     def finish(self, location):
-        value = self.terminal_value
-        return self.process_value(location, value, self.last_offset + 1)
+        self.final_location = location
+        self.final_suffix_offset = self.node_factory.final_suffix()
 
     def process_value(self, location, value, offset):
         continue_processing_value = True
