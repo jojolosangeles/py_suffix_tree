@@ -1,6 +1,5 @@
 from itertools import count
 
-from suffix_tree.location import Location
 from suffix_tree.node_factory import NodeFactory
 from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
@@ -8,7 +7,6 @@ from suffix_tree.visitor.visitor import NodeDFS, SuffixCollector, DepthVisitor
 import random
 import string
 import time
-
 
 def ptime(s, t1, t2):
     diff = t2 - t1
