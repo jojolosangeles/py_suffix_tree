@@ -2,10 +2,11 @@
 
 
 class Node:
+    """Node represents a sub-sequence of values found at multiple locations in the total sequence.
+    The exact locations in the total sequence are in the LeafNodes 'suffix_offset' values below
+    this Node.  A LeafNode respresents only one location (the suffix_offset), and a RootNode
+    represents all locations."""
     UNDEFINED_OFFSET = -1
-
-    """Node represents an offset in a sequence of values."""
-
     def __init__(self, id, incoming_edge_start_offset, incoming_edge_end_offset=UNDEFINED_OFFSET, children=None,
                  suffix_link=None):
         self.id = id

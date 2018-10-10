@@ -42,6 +42,7 @@ class SuffixTree:
         return suffix_collector.suffixes
 
 class TreeBuilder:
+    """This class builds a suffix tree using the Ukkonen algorithm."""
     def __init__(self, datasource, node_factory, terminal_value=-1):
         self.id_count = count()
         self.data_generator = ((val,offset) for (val,offset) in zip(datasource,self.id_count))

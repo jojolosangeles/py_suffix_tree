@@ -1,6 +1,22 @@
-"""Location within a suffix tree."""
+"""Location within a suffix tree, as each value in the sequence is processed.
 
+The location is between items in the sequence, so there is 0 (if root)
+or more 'previous' values, and one (if on edge) or more 'next' values.
 
+    * NODE (has two outgoing edges)
+    value1a * value1b * value1c * NODE
+                                  value3a value3b value3c
+                                  value4a value4b value4c
+    value2a * value2v * NODE
+
+The values are numbers representing the offset within the sequence of values.
+
+Within an edge, each value offset is sequential, so we need only store the first offset
+and last offset (or length).
+
+The location also needs the offset of the previous value, since the algorithm needs
+to know if the value being processed already exists in the tree.
+"""
 class Location:
 
     """A location within a suffix tree, either on a node or on an edge."""

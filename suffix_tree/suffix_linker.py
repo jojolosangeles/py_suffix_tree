@@ -5,8 +5,7 @@ class SuffixLinker:
 
     def needs_suffix_link(self, node):
         """Any newly created internal node needs a suffix link.  If a previously
-        created node is missing its suffix link, then it just points
-        to this node."""
+        created node is missing its suffix link, it points to a newly created node."""
         self.link_to(node)
         self.node_missing_suffix_link = node
 
