@@ -40,3 +40,26 @@ class LeafNode(Node):
 
     def incoming_edge_length(self):
         return 0
+
+
+class NodeFlattener:
+    def __init__(self, writer):
+        self.writer = writer
+
+    def write_root(self, node):
+        self.writer.write("{id}\n".format(id=node.id))
+
+    def write_leaf(self, node):
+        self.writer.write("{id} {parent_id} {incoming_sequence_id} {suffix_offset}\n".format(
+            id = node.id,
+            parent_id = node.parent.id,
+            incoming_sequence_id = node.incoming_sequence_id,
+            suffix_offset = node.suffix_offset
+        ))
+
+    def write_internal(self, node):
+        self.writer.write("{id} {parent_id} {incoming_sequence_id}\n".format(
+            id = node.id,
+            parent_id = node.parent.id,
+            incoming_sequence_id = node.incoming_sequence_id
+        ))
