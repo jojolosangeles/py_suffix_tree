@@ -61,6 +61,8 @@ class TreeBuilder:
             while True:
                 self.process_value(location, *self.get_next_value_and_offset())
         except StopIteration:
+            self.last_offset += 1
+            self.process_value(location, self.terminal_value, self.last_offset)
             self.finish(location)
 
     def final_id(self):
