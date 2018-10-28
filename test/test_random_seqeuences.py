@@ -1,5 +1,6 @@
 from itertools import count
 
+from suffix_tree.data_store import DataStore
 from suffix_tree.node_factory import NodeFactory
 from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
@@ -20,10 +21,11 @@ def depth_visit(node, final_offset):
 t1 = time.time()
 random.seed(3)
 testcount = 0
-for rlen in range(1,50):
+for rlen in range(1,100):
     print(rlen)
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
-    builder = TreeBuilder(data, NodeFactory(SuffixLinker()))
+    data_generator = ((val,offset) for (val,offset) in zip(data,count()))
+    builder = TreeBuilder(data_generator, DataStore(), NodeFactory(SuffixLinker()))
     builder.process_all_values()
     depth_visit(builder.root, builder.last_offset)
     tree = builder.get_tree()

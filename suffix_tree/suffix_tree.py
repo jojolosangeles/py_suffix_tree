@@ -1,9 +1,8 @@
-from suffix_tree.data_store import DataStore
 from suffix_tree.location import Location
 from itertools import count
 
 from suffix_tree.visitor.visitor import OffsetAdjustingVisitor, NodeDFS, SuffixCollector
-
+import time
 
 class SuffixTree:
     def __init__(self, root, data_store, final_suffix):
@@ -43,12 +42,12 @@ class SuffixTree:
 
 class TreeBuilder:
     """This class builds a suffix tree using the Ukkonen algorithm."""
-    def __init__(self, datasource, node_factory, terminal_value=-1):
+    def __init__(self, data_generator, data_store, node_factory, terminal_value=-1):
         self.id_count = count()
-        self.data_generator = ((val,offset) for (val,offset) in zip(datasource,self.id_count))
+        self.data_generator = data_generator
         self.node_factory = node_factory
         self.terminal_value = terminal_value
-        self.data_store = DataStore()
+        self.data_store = data_store
         self.root = node_factory.create_root()
 
     def get_tree(self):
@@ -57,9 +56,18 @@ class TreeBuilder:
     def process_all_values(self):
         """Create suffix tree from values in the data source."""
         location = Location(self.root, self.data_store)
+        counter = 0
+        mcounter = 0
+        start_time = time.time()
         try:
             while True:
                 self.process_value(location, *self.get_next_value_and_offset())
+                counter += 1
+                if (counter == 100000):
+                    mcounter += 1
+                    print("{} {}".format(mcounter,time.time()-start_time))
+                    start_time = time.time()
+                    counter = 0
         except StopIteration:
             self.last_offset += 1
             self.process_value(location, self.terminal_value, self.last_offset)

@@ -43,23 +43,34 @@ class LeafNode(Node):
 
 
 class NodeFlattener:
+    """Writes out a node in suffix tree as text."""
+    ROOT_FORMAT = "R {id}\n"
+    INTERNAL_FORMAT = "I {id} {parent_id} {incoming_sequence_id} {leaf_count} {depth}\n"
+    LEAF_FORMAT = "L {id} {parent_id} {incoming_sequence_id} {suffix_offset}\n"
+
     def __init__(self, writer):
         self.writer = writer
+        self.writer.write("# {fmt}".format(fmt=self.ROOT_FORMAT))
+        self.writer.write("# {fmt}".format(fmt=self.INTERNAL_FORMAT))
+        self.writer.write("# {fmt}".format(fmt=self.LEAF_FORMAT))
 
     def write_root(self, node):
-        self.writer.write("{id}\n".format(id=node.id))
+        self.writer.write(self.ROOT_FORMAT.format(id=node.id))
 
     def write_leaf(self, node):
-        self.writer.write("{id} {parent_id} {incoming_sequence_id} {suffix_offset}\n".format(
+        self.writer.write(self.LEAF_FORMAT.format(
             id = node.id,
             parent_id = node.parent.id,
+            leaf_count = node.leaf_count,
             incoming_sequence_id = node.incoming_sequence_id,
             suffix_offset = node.suffix_offset
         ))
 
     def write_internal(self, node):
-        self.writer.write("{id} {parent_id} {incoming_sequence_id}\n".format(
+        self.writer.write(self.INTERNAL_FORMAT.format(
             id = node.id,
             parent_id = node.parent.id,
+            leaf_count = node.leaf_count,
+            depth = node.depth,
             incoming_sequence_id = node.incoming_sequence_id
         ))

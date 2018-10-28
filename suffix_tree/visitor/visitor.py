@@ -1,5 +1,5 @@
 from collections import defaultdict
-from multiprocessing import SimpleQueue
+from queue import Queue
 
 from suffix_tree.node import Node
 
@@ -10,11 +10,25 @@ class Visitor:
     def after_children_visited(self, node):
         pass
 
+class ComboVisitor:
+    def __init__(self, *args):
+        self.visitors = list(args)
+
+    def visit(self, node, final_suffix_offset=0):
+        for v in self.visitors:
+            v.visit(node, final_suffix_offset)
+
+    def after_children_visited(self, node):
+        for v in self.visitors:
+            v.after_children_visited(node)
+
 class NodeBFS:
+    """Visit each node in a tree with breadth-first traversal."""
     def __init__(self):
-        self.node_queue = SimpleQueue()
+        self.node_queue = Queue()
 
     def __call__(self, visitor, node, final_suffix_offset=0):
+        """Traverse the tree with a visitor starting at a given node."""
         self.final_suffix_offset = final_suffix_offset
         self.node_queue.put(node)
         self.bfs(visitor, node)
@@ -100,6 +114,10 @@ class Flattener(Visitor):
 
 
 class SuffixCollector(Visitor):
+    """Collect the suffix offsets encountered by this visitor.
+
+    This is done after traversing down the tree, ending at a node, to
+    get all locations of the search sequence in the sequence of values."""
     def __init__(self, result):
         self.suffixes = result
 
@@ -123,10 +141,8 @@ class PrintVisitor:
 
 
 class LeafCountVisitor:
-    def __init__(self, final_suffix_offset):
-        self.final_suffix_offset = final_suffix_offset
-
-    def visit(self, node, final_suffix_offset):
+    """Set the number of leaf nodes (leaf_count) at or below each node in the tree."""
+    def visit(self, node, final_suffix_offset=0):
         if node.is_leaf():
             node.leaf_count = 1
 
@@ -136,7 +152,8 @@ class LeafCountVisitor:
 
 
 class DepthVisitor(Visitor):
-    def visit(self, node, final_suffix_offset):
+    """Set the depth of each node in the suffix tree."""
+    def visit(self, node, final_suffix_offset=0):
         if node.is_root():
             node.depth = 0
         elif node.is_leaf():
