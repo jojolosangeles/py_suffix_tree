@@ -11,7 +11,11 @@ class SuffixTree:
         self.final_suffix = final_suffix
         self.final_string = self.data_store.value_str(final_suffix, data_store.data_len())
 
-    def uDO_set_start_offset(self, start_offset):
+    def set_start_offset(self, start_offset):
+        """Adjust all data offsets based on a new start offset.
+
+        This is useful in the case where a series of trees represent a longer sequence
+        and each tree in the series is made from a portion of the longer sequence."""
         dfs = NodeDFS()
         dfs(OffsetAdjustingVisitor(start_offset), self.root)
 

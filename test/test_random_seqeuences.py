@@ -1,6 +1,6 @@
 from itertools import count
 
-from suffix_tree.data_store import DataStore
+from suffix_tree.data_store import DataStore, MmapDataStore
 from suffix_tree.node_factory import NodeFactory
 from suffix_tree.suffix_linker import SuffixLinker
 from suffix_tree.suffix_tree import TreeBuilder
@@ -14,13 +14,14 @@ def ptime(s, t1, t2):
     print("{} in {} ms".format(s, int(diff*1000)))
 
 def depth_visit(node, final_offset):
-    depth_visitor = DepthVisitor()
+    depth_visitor = DepthVisitor(final_offset)
     dfs = NodeDFS()
-    dfs(depth_visitor, node, final_offset)
+    dfs(depth_visitor, node)
 
 t1 = time.time()
 random.seed(3)
 testcount = 0
+
 for rlen in range(1,100):
     print(rlen)
     data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
