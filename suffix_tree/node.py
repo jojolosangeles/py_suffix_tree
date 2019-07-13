@@ -1,5 +1,58 @@
 """Node within a suffix tree."""
 
+class GraphEntity:
+    """The GraphEntity is the replacement for the Node, and modelled after dynamoDB table design.
+╔══════════╦══════╦══════╦══════╦══════╦══════╦══════╦══════╗
+║  PK      ║  SK  ║ iESO ║ iEVS ║ tNID ║ pNID ║ sO   ║ sL   ║
+╠══════════╬══════╬══════╬══════╬══════╬══════╬══════╬══════╣
+║  root    ║ self ║  -   ║  -   ║  -   ║  -   ║  -   ║  -   ║
+║  root    ║ A    ║  -   ║  -   ║  i1  ║  -   ║  -   ║  -   ║
+║  root    ║ B    ║  -   ║  -   ║  i2  ║  -   ║  -   ║  -   ║
+║  root    ║ X    ║  2   ║  -   ║  -   ║ root ║  2   ║  -   ║
+║  root    ║ Y    ║  3   ║  -   ║  -   ║ root ║  3   ║  -   ║
+║  root    ║ C    ║  6   ║  -   ║  -   ║ root ║  6   ║  -   ║
+║  root    ║ D    ║  7   ║  -   ║  -   ║ root ║  7   ║  -   ║
+╠══════════╬══════╬══════╬══════╬══════╬══════╬══════╬══════╣
+║   i1     ║ self ║  -   ║ AB   ║  -   ║ root ║  -   ║  i2  ║
+║   i1     ║ X    ║  2   ║  -   ║  -   ║ i1   ║  0   ║  -   ║
+║   i1     ║ C    ║  6   ║  -   ║  -   ║ i1   ║  4   ║  -   ║
+╠══════════╬══════╬══════╬══════╬══════╬══════╬══════╬══════╣
+║   i2     ║ self ║  -   ║ B    ║  -   ║ root ║  -   ║  -   ║
+║   i2     ║ X    ║  2   ║  -   ║  -   ║ i2   ║  1   ║  -   ║
+║   i2     ║ C    ║  6   ║  -   ║  -   ║ i2   ║  5   ║  -   ║
+╚══════════╩══════╩══════╩══════╩══════╩══════╩══════╩══════╝
+
+For refactoring, first I will have the GraphEntity hold the data for the node
+    """
+    SELF = "self"
+
+    def __init__(self, PK, SK, iESO, iEVS, tNID, pNID, sO, sL):
+        self.PK = PK
+        self.SK = SK
+        self.iESO = iESO
+        self.iEVS = iEVS
+        self.tNID = tNID
+        self.pNID = pNID
+        self.sO = sO
+        self.sL = sL
+
+    def is_root(self):
+        return self.sL == self.PK
+
+    @staticmethod
+    def getValues(start, end):
+        return ""
+
+    @staticmethod
+    def factory(id, incoming_edge_start_offset, incoming_edge_end_offset, children, suffix_link):
+        return GraphEntity(PK=id,
+                           SK=GraphEntity.SELF,
+                           iESO=incoming_edge_start_offset if incoming_edge_end_offset == Node.UNDEFINED_OFFSET else None,
+                           iEVS=None if incoming_edge_end_offset == Node.UNDEFINED_OFFSET else GraphEntity.getValues(incoming_edge_start_offset, incoming_edge_end_offset),
+                           tNID=None,
+                           pNID=None,
+                           sO=-0,
+                           sL=suffix_link)
 
 class Node:
     """Node represents a sub-sequence of values found at multiple locations in the total sequence.
@@ -14,7 +67,9 @@ class Node:
         self.incoming_edge_end_offset = incoming_edge_end_offset
         self.children = children
         self.suffix_link = suffix_link
+        self.graph_entity = GraphEntity.factory(id, incoming_edge_start_offset, incoming_edge_end_offset, children, suffix_link)
 
+    # Trying to transition to "graph_entity"
     def is_root(self):
         return self.suffix_link == self
 
