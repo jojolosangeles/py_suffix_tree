@@ -1,7 +1,5 @@
 from queue import Queue
 
-from suffix_tree.node import Node
-
 class Visitor:
     def visit(self, node):
         pass
@@ -41,15 +39,12 @@ class NodeBFS:
 
 
 class NodeDFS:
-    def __call__(self, visitor, node):
-        visitor.visit(node)
-        if node.children != None:
-            for child in node.children:
-                self(visitor, node.children[child])
-        visitor.after_children_visited(node)
-
-
-
+    def __call__(self, visitor, nodeStore, startNode):
+        visitor.visit(startNode)
+        if startNode.hasChildren():
+            for child in nodeStore.children(startNode.PK):
+                self(visitor, nodeStore, child)
+        visitor.after_children_visited(startNode)
 
 
 class SuffixCollector(Visitor):
@@ -57,12 +52,12 @@ class SuffixCollector(Visitor):
 
     This is done after traversing down the tree, ending at a node, to
     get all locations of the search sequence in the sequence of values."""
-    def __init__(self, result):
-        self.suffixes = result
+    def __init__(self):
+        self.suffixes = []
 
     def visit(self, node):
         if node.is_leaf():
-            self.suffixes.append(node.suffix_offset)
+            self.suffixes.append(node.suffixOffset)
 
 class PrintVisitor:
     def __init__(self):
@@ -99,17 +94,7 @@ class DepthVisitor(Visitor):
         if node.is_root():
             node.depth = 0
         elif node.is_leaf():
-            node.depth = self.final_suffix_offset - node.incoming_edge_start_offset + node.parent.depth
+            node.depth = self.final_suffix_offset - node.iESO + node.parent.depth
         else:
-            node.depth = node.incoming_edge_length() + node.parent.depth
+            node.depth = node.incomingEdgeLength() + node.parent.depth
 
-
-class OffsetAdjustingVisitor(Visitor):
-    def __init__(self, starting_offset):
-        self.starting_offset = starting_offset
-
-    def visit(self, node):
-        if node.incoming_edge_start_offset != Node.UNDEFINED_OFFSET:
-            node.incoming_edge_start_offset += self.starting_offset
-        if node.incoming_edge_end_offset != Node.UNDEFINED_OFFSET:
-            node.incoming_edge_end_offset += self.starting_offset

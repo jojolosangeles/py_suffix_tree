@@ -22,17 +22,18 @@ class Location:
     """A location within a suffix tree, either on a node or on an edge."""
     def __init__(self, node, data_store):
         self.node = node
-        self.data_offset = node.incoming_edge_end_offset
         self.on_node = True
         self.data_store = data_store
 
     def locate_on_node(self, node):
-        self.locate_on_edge(node, node.incoming_edge_end_offset)
+        self.node = node
+        self.on_node = True
+        self.data_offset = 0
 
-    def locate_on_edge(self, node, offset):
+    def locate_on_leaf_edge(self, node, offset):
         self.node = node
         self.data_offset = offset
-        self.on_node = self.node.incoming_edge_end_offset == offset
+        self.on_node = False
 
     def next_offset_matches(self, value):
         return self.data_store.value_at(self.data_offset + 1) == value
@@ -50,23 +51,8 @@ class Location:
             self.next_data_offset()
         return result
 
-    def follow_value(self, value):
-        """Follow a value to get a new location.
 
-        Returns:
-            True if successfully modified location
-            False otherwise
-        """
-        if self.on_node:
-            if value in self.node.children:
-                dest_node = self.node.children[value]
-                self.locate_on_edge(dest_node, dest_node.incoming_edge_start_offset)
-                return True
-        elif self.follow_edge_value(value):
-            return True
-        return False
-
-    def go_to_suffix(self):
+    def go_to_suffix(self, nodeStore):
         """
         Traverse to the suffix for this node.
 
@@ -77,49 +63,47 @@ class Location:
         if self.node.is_root():
             return False
 
-        if self.node.suffix_link is None:
+        if not hasattr(self.node, 'suffixLink'):
             # When a node does NOT have a suffix link, it is a newly
             # created internal node, and will get its link as the value
             # is processed.  The Ukkonen algorithm guarantees the parent
             # has a suffix link, since at most one node in entire graph
             # is missing a suffix link during processing of a value.
-            amount_to_traverse = self.node.incoming_edge_length()
+            stringToTraverseDown = self.node.incomingEdgeValueSequence
             parent = self.node.parent
-            value_offset = self.node.incoming_edge_start_offset
-
-            # By definition, suffix links decrease depth in tree by one value
-            # except for root, which has itself as a suffix link, in that case
-            # we have to manually skip a value.
-            if parent.is_root():
-                value_offset += 1
-                amount_to_traverse -= 1
-
-            self.traverse_down(parent.suffix_link, value_offset, amount_to_traverse)
+            if parent == parent.suffixLink:
+                stringToTraverseDown = stringToTraverseDown[1:]
+            suffixLink = parent.suffixLink
+            self.traverse_down(nodeStore, suffixLink, stringToTraverseDown)
             return True
         else:
-            self.locate_on_node(self.node.suffix_link)
+            self.locate_on_node(self.node.suffixLink)
             return True
 
-    def traverse_down(self, node, offset, amount_to_traverse):
+    def traverse_down(self, nodeStore, node, stringToTraverseDown):
         """Traverse down a node starting at a given offset in the data
         source when the path down is assumed to exist (skip/count), so
         we only check first value when traversing edge down.
         """
         self.locate_on_node(node)
+        amount_to_traverse = len(stringToTraverseDown)
         if amount_to_traverse > 0:
-            child = self.next_node_at(offset)
-            if child.is_leaf() or child.incoming_edge_length() >= amount_to_traverse:
-                self.locate_on_edge(child, child.incoming_edge_start_offset + amount_to_traverse - 1)
+            partition = nodeStore.PK_partition[node.PK]
+            child = partition[stringToTraverseDown[0]]
+            if child.is_leaf():
+                self.locate_on_leaf_edge(child, amount_to_traverse)
+            elif child.incomingEdgeLength() >= amount_to_traverse:
+                self.locate_on_node(child)
+                self.on_node = False
+                self.data_offset = amount_to_traverse
             else:
-                edge_length = child.incoming_edge_length()
-                amount_to_traverse -= edge_length
-                self.traverse_down(child, offset + edge_length, amount_to_traverse)
+                edge_length = child.incomingEdgeLength()
+                self.traverse_down(nodeStore, child, stringToTraverseDown[edge_length:])
 
     def __repr__(self):
-        return "node({}), incoming {}-{}, data_offset {}, on_node={}".\
-                format(self.node.id,
-                       self.node.incoming_edge_start_offset,
-                       self.node.incoming_edge_end_offset,
-                       self.data_offset, self.on_node)
+        additional = ""
+        if not self.on_node:
+            additional = f", data_offset: {self.data_offset}"
+        return f"{self.node}, on_node: {self.on_node}{additional}"
 
 
