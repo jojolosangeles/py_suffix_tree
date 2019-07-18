@@ -8,7 +8,7 @@ from suffix_tree.visitor.visitor import NodeDFS, NodeBFS, DepthVisitor, LeafCoun
 import sys
 import time
 
-def depth_visit(tree):
+def depth_visit(tree, nodeStore):
     node = tree.root
     final_offset = tree.final_suffix
     depth_visitor = DepthVisitor(final_offset)
@@ -24,7 +24,7 @@ def test_create_tree():
     builder = TreeBuilder(data, NodeFactory(SuffixLinker()))
     builder.process_all_values()
     tree = builder.get_tree()
-    depth_visit(tree)
+    depth_visit(tree, None)
     assert tree is not None
 
 def test_flatten_tree():
@@ -32,7 +32,7 @@ def test_flatten_tree():
     builder = TreeBuilder(data, NodeFactory(SuffixLinker()))
     builder.process_all_values()
     tree = builder.get_tree()
-    depth_visit(tree)
+    depth_visit(tree, None)
     with open("mississippi.flat", "w") as flat_tree, open("mississippi.dict", "w") as flat_dict:
         flattener = Flattener(tree.data_store, NodeFlattener(flat_tree), flat_dict)
         bfs = NodeBFS()
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     tree_build_complete_time = time.time()
     tree = builder.get_tree()
     print("Traversing tree")
-    depth_visit(tree)
+    depth_visit(tree, None)
     traversal_complete_time = time.time()
     print("Flattening tree")
     with open("{file_path}.{output_extension}".format(file_path=file_path,

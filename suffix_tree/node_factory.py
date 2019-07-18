@@ -1,32 +1,38 @@
-from suffix_tree.node import GraphNode
 from itertools import count
+from suffix_tree.suffix_linker import SuffixLinker
+from suffix_tree.node import ROOT, SELF, Node
 
 class NodeFactory:
-    """NodeFactory is used by the Ukkonen algorithm implementation to create Node instances
-    as a sequence of values is processed."""
-    def __init__(self, suffix_linker):
-        self.suffixOffsetGenerator = (i for i in count())
-        self.id_generator = (i for i in count())
-        self.suffix_linker = suffix_linker
+    def __init__(self):
+        self.internalIdGenerator = (i for i in count(1))
+        self.suffixGenerator = (i for i in count())
+        self.suffixLinker = SuffixLinker()
 
-    def nextInternalId(self):
-        return next(self.id_generator)
+    def createRoot(self):
+        result = Node(ROOT, SELF)
+        result.sL = ROOT
+        result.iEVS = ""
+        return result
 
-    def final_suffix(self):
-        return next(self.suffixOffsetGenerator)
+    def createInternalNode(self, parentPK, iEVS):
+        result = Node(next(self.internalIdGenerator), SELF)
+        result.iEVS = iEVS
+        result.parentPK = parentPK
+        self.suffixLinker.nodeNeedsSuffixLink(result)
+        return result
 
-    def create_root(self):
-        return GraphNode.create_root()
+    def createLeafEdge(self, PK, value, dsOffset):
+        result = Node(PK, value)
+        result.iESO = dsOffset
+        result.sO = next(self.suffixGenerator)
+        return result
 
-    def create_leaf(self, node, value, offset):
-        leaf = GraphNode.create_leaf(node.PK, value, offset, next(self.suffixOffsetGenerator))
-        leaf.parent = node
-        return leaf
+    def createInternalEdge(self, parentPK, SK, targetPK):
+        result = Node(parentPK, SK)
+        if SK == SELF:
+            print("whoa")
+        result.tN = targetPK
+        return result
 
-    def create_internal(self, incomingEdgeValueSequence):
-        return GraphNode.create_internal(f"i{self.nextInternalId()}", incomingEdgeValueSequence)
 
-    def add_child(self, parent, value, child):
-        parent.children[value] = child
-        child.parent = parent
 

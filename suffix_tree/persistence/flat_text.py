@@ -56,7 +56,7 @@ class Flattener(Visitor):
         self.last_id = id
         return id
 
-    def visit(self, node):
+    def visit(self, node, nodeStore):
         if node.is_root():
             self.data_sink.write_root(node)
         elif node.is_leaf():

@@ -1,7 +1,7 @@
 from queue import Queue
 
 class Visitor:
-    def visit(self, node):
+    def visit(self, node, nodeStore):
         pass
 
     def after_children_visited(self, node):
@@ -11,9 +11,9 @@ class ComboVisitor:
     def __init__(self, *args):
         self.visitors = list(args)
 
-    def visit(self, node):
+    def visit(self, node, nodeStore):
         for v in self.visitors:
-            v.visit(node)
+            v.visit(node, nodeStore)
 
     def after_children_visited(self, node):
         for v in self.visitors:
@@ -32,7 +32,7 @@ class NodeBFS:
     def bfs(self, visitor, node):
         while not self.node_queue.empty():
             node = self.node_queue.get()
-            visitor.visit(node)
+            visitor.visit(node, None)
             if node.children != None:
                 for child in node.children:
                     self.node_queue.put(node.children[child])
@@ -40,8 +40,8 @@ class NodeBFS:
 
 class NodeDFS:
     def __call__(self, visitor, nodeStore, startNode):
-        visitor.visit(startNode)
-        if startNode.hasChildren():
+        visitor.visit(startNode, nodeStore)
+        if nodeStore.hasChildren(startNode.PK, startNode.SK):
             for child in nodeStore.children(startNode.PK):
                 self(visitor, nodeStore, child)
         visitor.after_children_visited(startNode)
@@ -55,17 +55,18 @@ class SuffixCollector(Visitor):
     def __init__(self):
         self.suffixes = []
 
-    def visit(self, node):
-        if node.is_leaf():
-            self.suffixes.append(node.suffixOffset)
+    def visit(self, node, nodeStore):
+        print(f"node is {node}")
+        if node.isLeafEdge():
+            self.suffixes.append(node.sO)
 
 class PrintVisitor:
     def __init__(self):
         self.visit_depth = 0
 
-    def visit(self, node):
+    def visit(self, node, nodeStore):
         self.visit_depth += 1
-        if node.is_root():
+        if node.isRoot():
             print("root")
         else:
             print("{}lf={}, depth={}, {}-{}".format("   "*self.visit_depth, node.leaf_count, node.depth, node.incoming_edge_start_offset, "*" if node.incoming_edge_end_offset < 0 else node.incoming_edge_end_offset))
@@ -76,12 +77,12 @@ class PrintVisitor:
 
 class LeafCountVisitor:
     """Set the number of leaf nodes (leaf_count) at or below each node in the tree."""
-    def visit(self, node):
-        if node.is_leaf():
+    def visit(self, node, nodeStore):
+        if node.isLeafEdge():
             node.leaf_count = 1
 
     def after_children_visited(self, node):
-        if not node.is_leaf():
+        if not node.isLeafEdge():
             node.leaf_count = sum([node.children[child].leaf_count for child in node.children])
 
 
@@ -90,11 +91,11 @@ class DepthVisitor(Visitor):
     def __init__(self, final_suffix_offset):
         self.final_suffix_offset = final_suffix_offset
 
-    def visit(self, node):
-        if node.is_root():
+    def visit(self, node, node_store):
+        if node.isRoot():
             node.depth = 0
-        elif node.is_leaf():
-            node.depth = self.final_suffix_offset - node.iESO + node.parent.depth
-        else:
-            node.depth = node.incomingEdgeLength() + node.parent.depth
+        elif node.isLeafEdge():
+            node.depth = self.final_suffix_offset - node.iESO + node_store.getNode(node.PK).depth
+        elif node.isInternalNode():
+            node.depth = len(node.iEVS) + node_store.getNode(node.parentPK).depth
 
