@@ -29,8 +29,6 @@ class NodeFactory:
 
     def createInternalEdge(self, parentPK, SK, targetPK):
         result = Node(parentPK, SK)
-        if SK == SELF:
-            print("whoa")
         result.tN = targetPK
         return result
 

@@ -2,6 +2,7 @@ class Traverser:
     def __init__(self, nodeStore, dataSource):
         self.nodeStore = nodeStore
         self.dataSource = dataSource
+        self.debug_print = False
 
     def canFollowValue(self, location, value):
         if location.on_node:
@@ -23,9 +24,13 @@ class Traverser:
         else:
             location.incomingEdgeOffset += 1
 
+    def print(self, s):
+        if self.debug_print:
+            print(s)
+
     def goToSuffix(self, location):
         # if we are on a node with suffix link, follow that link
-        print(f"gotoSuffix: {location}")
+        self.print(f"gotoSuffix: {location}")
         if location.on_node:
             if location.node.hasSuffixLink():
                 location.locateOnNode(self.nodeStore.getNode(location.node.sL))
@@ -34,7 +39,6 @@ class Traverser:
                 parentNode = self.nodeStore.getNode(location.node.parentPK)
                 if parentNode.isRoot():
                     downStr = downStr[1:]
-                print(f"parent node: {parentNode}")
                 parentNode = self.nodeStore.getNode(parentNode.sL)
                 location.locateOnNode(parentNode)
                 self.skipJumpDown(location, downStr)
@@ -64,7 +68,7 @@ class Traverser:
                     if len(downStr) > len(internalNode.iEVS):
                         downStr = downStr[len(internalNode.iEVS):]
                         location.locateOnNode(internalNode)
-                        self.skipJumpDownskipJumpDown(location, downStr)
+                        self.skipJumpDown(location, downStr)
                     elif len(downStr) == len(internalNode.iEVS):
                         location.locateOnNode(internalNode)
                     else:

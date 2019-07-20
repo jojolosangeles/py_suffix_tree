@@ -6,6 +6,9 @@ INTERNAL_EDGE_VALUE_SEQUENCE = "iEVS"
 SUFFIX_LINK = "sL"
 TARGET_NODE = "tN"
 
+TERMINAL_VALUE = -1
+TERMINAL_VALUE_OFFSET = -1
+
 class Node:
     def __init__(self, PK, SK):
         self.PK = PK
@@ -31,8 +34,8 @@ class Node:
             return "root"
         elif self.isInternalNode():
             sL = self.sL if self.hasSuffixLink() else "(missing suffix link)"
-            return f"internal-{self.PK}, {self.SK} \"{self.iEVS}\" sL: {sL}"
+            return f"node.{self.PK}, {self.SK} \"{self.iEVS}\" sL: {sL}"
         elif self.isLeafEdge():
-            return f"{self.PK}, {self.SK}, sO {self.sO}, iESO {self.iESO}"
+            return f"{self.PK}.{self.SK} to LeafEdge.{self.sO}, iESO {self.iESO}"
         else:
-            return f"Internal Edge from {self.PK} on value {self.SK} to {self.tN}"
+            return f"edge.{self.PK}.{self.SK} to node.{self.tN}"

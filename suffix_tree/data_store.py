@@ -1,6 +1,9 @@
 import mmap
 import os
 
+from suffix_tree.node import TERMINAL_VALUE
+
+
 class DataStore:
     """Stores values processed, provides access to previously processed values"""
     def __init__(self):
@@ -16,7 +19,7 @@ class DataStore:
         return [value for value in self.values[start_offset:(end_offset+1)]]
 
     def value_str(self, start_offset, end_offset):
-        if end_offset == -1:
+        if end_offset == TERMINAL_VALUE:
             return ''.join(self.values[start_offset:])
         else:
             return ''.join(self.values[start_offset:end_offset + 1])
@@ -61,7 +64,7 @@ class MmapDataStore:
                   .format(start_offset=start_offset, end_offset=end_offset))
             return ""
         self.mmfile.seek(start_offset)
-        if end_offset == -1:
+        if end_offset == TERMINAL_VALUE:
             return self.mmfile.read(self.get_read_size(self.fileSize - start_offset))
         else:
             return self.mmfile.read(self.get_read_size(end_offset - start_offset + 1))

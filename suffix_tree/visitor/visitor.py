@@ -56,7 +56,7 @@ class SuffixCollector(Visitor):
         self.suffixes = []
 
     def visit(self, node, nodeStore):
-        print(f"node is {node}")
+        #print(f"node is {node}")
         if node.isLeafEdge():
             self.suffixes.append(node.sO)
 

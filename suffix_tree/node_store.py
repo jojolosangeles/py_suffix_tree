@@ -14,7 +14,11 @@ class NodeStore:
 
     def children(self, PK):
         partition = self.store[PK]
-        return [ partition[key] for key in partition if key != SELF ]
+        edges = [ partition[key] for key in partition if key != SELF ]
+        internalEdges = [ ie for ie in edges if ie.isInternalEdge() ]
+        leafEdges = [ le for le in edges if le.isLeafEdge() ]
+        internalNodes = [ self.getNode(ie.tN) for ie in internalEdges ]
+        return internalNodes + leafEdges
 
     def getNode(self, PK):
         return self.store[PK][SELF]
