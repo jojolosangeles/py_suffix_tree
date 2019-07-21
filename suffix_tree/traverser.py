@@ -2,7 +2,6 @@ class Traverser:
     def __init__(self, nodeStore, dataSource):
         self.nodeStore = nodeStore
         self.dataSource = dataSource
-        self.debug_print = False
 
     def canFollowValue(self, location, value):
         if location.on_node:
@@ -24,13 +23,8 @@ class Traverser:
         else:
             location.incomingEdgeOffset += 1
 
-    def print(self, s):
-        if self.debug_print:
-            print(s)
-
     def goToSuffix(self, location):
         # if we are on a node with suffix link, follow that link
-        self.print(f"gotoSuffix: {location}")
         if location.on_node:
             if location.node.hasSuffixLink():
                 location.locateOnNode(self.nodeStore.getNode(location.node.sL))

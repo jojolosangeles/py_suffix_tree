@@ -31,15 +31,14 @@ def test_sequence(data, testcount, rlen):
 
     s = builder.dataSource
     print(f"S={s}")
-    print(".")
     for substrlen in range(1, rlen+1):
         for start_offset,end_offset in zip(count(), range(substrlen-1, rlen)):
             test_str = builder.dataSource[start_offset:end_offset+1]
-            print(f"test_str='{test_str}'")
+            #print(f"test_str='{test_str}'")
 
             result = tree.find(test_str)
             expected_result = tree.find_in_str(test_str, s)
-            print(f"{test_str}, {start_offset}, expected: {expected_result}, got: {result}")
+            #print(f"{test_str}, {start_offset}, expected: {expected_result}, got: {result}")
             assert(start_offset in result)
             testcount += 1
     for substrlen in range(1, rlen):
@@ -51,11 +50,12 @@ def test_sequence(data, testcount, rlen):
     return testcount
 
 #test_str = "fbfceee"#a"#f"#f"#b"#f"#e" #None #"ddaaeeadfececeb"
-test_str = "eeee"
+#test_str = "eeee"
 #test_str = "fbfceeea"
 #test_str = "fbfceee"
 #test_str = "feee"
 #test_str = "fbfceeea"
+test_str = None#'acbacbdaaccaacc'
 if test_str:
     print(f"test_str={test_str}")
     testcount = test_sequence(test_str, testcount, len(test_str))
@@ -63,7 +63,8 @@ else:
     for rlen in range(1,(number_tests+1)):
         print(rlen)
         data = (random.choice(string.ascii_letters[0:6]) for _ in range(rlen))
-        testcount = test_sequence(data, testcount, rlen)
+        data_as_str = ''.join(data)
+        testcount = test_sequence(data_as_str, testcount, rlen)
 
 t2 = time.time()
 ptime("Completed {} tests".format(testcount), t1, t2)

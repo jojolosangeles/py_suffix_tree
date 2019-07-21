@@ -40,30 +40,11 @@ class TreeBuilder:
     def process_all_values(self):
         count = 0
         for value in self.dataSource[:TERMINAL_VALUE_OFFSET]:
-            self.debug_print(f"process value[{count}] = {value}")
-            self.debug_print(self.location)
-            self.debug_print(self.nodeStore)
-            self.debug_print("-- begin multipass processing --")
             while self.processValue(value, count) == VALUE_NEEDS_FURTHER_PROCESSING:
-                self.debug_print("-- pass complete --")
-                self.debug_print(self.location)
-                self.debug_print(self.nodeStore)
                 pass
-            self.debug_print("-- end multipass processing --")
             count += 1
-        self.debug_print("Now process TERMINAL_VALUE")
-        self.debug_print(self.location)
-        self.debug_print(self.nodeStore)
-        self.debug_print("-- begin multipass processing --")
         while self.processValue(TERMINAL_VALUE, count):
-            self.debug_print("-- pass complete --")
-            self.debug_print(self.location)
-            self.debug_print(self.nodeStore)
             pass
-        self.debug_print("-- end multipass processing --")
-        self.debug_print("FINAL RESULT")
-        self.debug_print(self.location)
-        self.debug_print(self.nodeStore)
         self.last_offset = count
 
     def processValue(self, value, offset):
@@ -76,7 +57,7 @@ class TreeBuilder:
             # The three types of graph changes:
             # 1 - insert below a node, by creating a LeafEdge child
             # 2 - insert on a LeafEdge at the location offset
-            # 3- insert on an InternalEdge at the location offset
+            # 3 - insert on an InternalEdge at the location offset
             if self.location.on_node:
                 # 1 - insert below a node, by creating a LeafEdge child
                 self.createLeafEdge(self.location.node.PK, value, offset)
@@ -125,6 +106,7 @@ class TreeBuilder:
                 previousInternalEdge.PK = internalNode.PK
                 previousInternalEdge.SK = original_iEVS[self.location.incomingEdgeOffset]
                 originalInternalNode.iEVS = original_iEVS[self.location.incomingEdgeOffset:]
+                originalInternalNode.parentPK = internalNode.PK
 
                 self.nodeStore.registerNode(internalNode)
                 self.nodeStore.registerNode(internalEdge)
