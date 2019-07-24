@@ -12,6 +12,8 @@ class NodeFactory:
         result = Node(ROOT, SELF)
         result.sL = ROOT
         result.iEVS = ""
+        result.isRoot = True
+        result.hasSuffixLink = True
         return result
 
     def createInternalNode(self, parentPK, iEVS):
@@ -19,17 +21,20 @@ class NodeFactory:
         result.iEVS = iEVS
         result.parentPK = parentPK
         self.suffixLinker.nodeNeedsSuffixLink(result)
+        result.isInternalNode = True
         return result
 
     def createLeafEdge(self, PK, value, dsOffset):
         result = Node(PK, value)
         result.iESO = dsOffset
         result.sO = next(self.suffixGenerator)
+        result.isLeafEdge = True
         return result
 
     def createInternalEdge(self, parentPK, SK, targetPK):
         result = Node(parentPK, SK)
         result.tN = targetPK
+        result.isInternalEdge = True
         return result
 
 

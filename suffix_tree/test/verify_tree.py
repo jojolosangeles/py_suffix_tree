@@ -1,7 +1,9 @@
-from random import randint
+from random import randint, choice
 from suffix_tree.node import ROOT
 from suffix_tree.location import Location
+from suffix_tree.suffix_tree import SuffixTree
 from suffix_tree.traverser import Traverser
+from suffix_tree.tree_builder import TreeBuilder
 from suffix_tree.visitor.visitor import SuffixCollector, NodeDFS
 import re
 
@@ -27,6 +29,14 @@ def tree_find(nodeStore, dataSource, test_str):
     dfs = NodeDFS()
     dfs(suffixCollector, nodeStore, location.node)
     return suffixCollector.suffixes
+
+def build_long_tree(test_len):
+    data = ''.join(choice("ACGT") for i in range(test_len))
+    builder = TreeBuilder(data)
+    builder.process_all_values()
+    #depth_visit(builder.nodeStore, builder.root, builder.last_offset)
+    tree = SuffixTree(builder.root, builder.nodeStore, builder.dataSource)
+    return tree
 
 global_debug = False
 

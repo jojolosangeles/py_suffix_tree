@@ -1,35 +1,51 @@
 ROOT = 0
-SELF = "SELF"
+SELF = 0
 
 # attributes with values dependent on node type
 SUFFIX_OFFSET = "sO"                    # LeafEdge
+INTERNAL_EDGE_START_OFFSET = "iESO"     # LeafEdge
 INTERNAL_EDGE_VALUE_SEQUENCE = "iEVS"   # Root, InternalNode
+SUFFIX_OFFSET = "sO"                    # LeafEdge
 SUFFIX_LINK = "sL"                      # Root, InternalNode
 TARGET_NODE = "tN"                      # Internal Edge
+SK = "SK"
+PK = "PK"
+PARENT_LINK = "pL"
 
+IS_LEAF_EDGE = "isLeafEdge"
+IS_INTERNAL_EDGE = "isInternalEdge"
+IS_INTERNAL_NODE = "isInternalNode"
+IS_ROOT = "isRoot"
+HAS_SUFFIX_LINK = "hasSuffixLink"
+
+NO_NODE = -1
+NO_OFFSET = -1
+NO_VALUE_SEQUENCE = ""
 TERMINAL_VALUE = -1
 TERMINAL_VALUE_OFFSET = -1
-NO_NODE = -1
 
-class Node:
+class NpNode:
     count = 0
     def __init__(self, PK, SK):
         self.PK = PK
         self.SK = SK
-        self.sO = TERMINAL_VALUE_OFFSET
-        self.iEVS = ""
-        self.sL = NO_NODE
-        self.tN = NO_NODE
 
-        Node.count += 1
+        self.NpNodeID = NpNode.count
+        NpNode.count += 1
+
         self.isLeafEdge = False
         self.isInternalEdge = False
         self.isInternalNode = False
         self.isRoot = False
         self.hasSuffixLink = False
 
-    def hasIncomingEdgeValues(self):
-        return len(self.iEVS) > 0
+        # guarantee value for all fields
+        self.sO = NO_OFFSET
+        self.iESO = NO_OFFSET
+        self.iEVS = NO_VALUE_SEQUENCE
+        self.sL = NO_NODE
+        self.tN = NO_NODE
+        self.pL = NO_NODE
 
     def __repr__(self):
         if self.isRoot:

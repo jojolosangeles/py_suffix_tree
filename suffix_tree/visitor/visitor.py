@@ -1,8 +1,13 @@
 from queue import Queue
+from suffix_tree.location import Location
+
 
 class Visitor:
     def visit(self, node, nodeStore):
         pass
+
+    def done(self):
+        return False
 
     def after_children_visited(self, node):
         pass
@@ -37,15 +42,58 @@ class NodeBFS:
                 for child in node.children:
                     self.node_queue.put(node.children[child])
 
-
 class NodeDFS:
+    """Depth First Traversal.
+
+    First visit the node, then visit each child of the node,
+    let visitor know when all children for a given node have been visited."""
     def __call__(self, visitor, nodeStore, startNode):
         visitor.visit(startNode, nodeStore)
         if nodeStore.hasChildren(startNode.PK, startNode.SK):
             for child in nodeStore.children(startNode.PK):
                 self(visitor, nodeStore, child)
+                if visitor.done():
+                    break
         visitor.after_children_visited(startNode)
 
+class MergeSuffixTreeVisitor(Visitor):
+    """Merge two suffix trees into one.
+
+    Traverse the first suffix tree (ST1), for each node,
+    - push the incoming edge start location
+    - push the corresponding second suffix tree (ST2) location
+    After visiting all children, pop those locations
+
+    For each value on the incoming edge, match to second suffix tree.
+    When a mismatch is encountered:
+    - emit location of both trees
+    - reset both tree location to most recent pushed location
+    - continue ST1 traversal"""
+    def __init__(self, st1, st2, mismatchLocations, traverser):
+        self.st1 = st1
+        self.st1location = Location()
+        self.st1location.locateOnNode(st1.root)
+        self.st2 = st2
+        self.st2location = Location()
+        self.st2location.locateOnNode(st2.root)
+        self.mismatchLocations = mismatchLocations
+        self.locationStack = []
+        self.traverser = traverser
+        self.doneForNow = False
+
+    def visit(self, node, nodeStore):
+        if node.hasIncomingEdgeValues():
+            for value in node.iEVS:
+                if not self.traverser.canFollowValue(self.st2location, value):
+                    self.mismatchLocations.foundMismatch(self.st1location, self.st2location)
+                    self.doneForNow = True
+
+    def done(self):
+        if self.doneForNow:
+            self.doneForNow = False
+            return True
+        else:
+            return False
 
 class SuffixCollector(Visitor):
     """Collect the suffix offsets encountered by this visitor.
@@ -57,7 +105,7 @@ class SuffixCollector(Visitor):
 
     def visit(self, node, nodeStore):
         #print(f"node is {node}")
-        if node.isLeafEdge():
+        if node.isLeafEdge:
             self.suffixes.append(node.sO)
 
 class PrintVisitor:
@@ -66,7 +114,7 @@ class PrintVisitor:
 
     def visit(self, node, nodeStore):
         self.visit_depth += 1
-        if node.isRoot():
+        if node.isRoot:
             print("root")
         else:
             print("{}lf={}, depth={}, {}-{}".format("   "*self.visit_depth, node.leaf_count, node.depth, node.incoming_edge_start_offset, "*" if node.incoming_edge_end_offset < 0 else node.incoming_edge_end_offset))
@@ -78,11 +126,11 @@ class PrintVisitor:
 class LeafCountVisitor:
     """Set the number of leaf nodes (leaf_count) at or below each node in the tree."""
     def visit(self, node, nodeStore):
-        if node.isLeafEdge():
+        if node.isLeafEdge:
             node.leaf_count = 1
 
     def after_children_visited(self, node):
-        if not node.isLeafEdge():
+        if not node.isLeafEdge:
             node.leaf_count = sum([node.children[child].leaf_count for child in node.children])
 
 
@@ -92,10 +140,10 @@ class DepthVisitor(Visitor):
         self.final_suffix_offset = final_suffix_offset
 
     def visit(self, node, node_store):
-        if node.isRoot():
+        if node.isRoot:
             node.depth = 0
-        elif node.isLeafEdge():
+        elif node.isLeafEdge:
             node.depth = self.final_suffix_offset - node.iESO + node_store.getNode(node.PK).depth
-        elif node.isInternalNode():
+        elif node.isInternalNode:
             node.depth = len(node.iEVS) + node_store.getNode(node.parentPK).depth
 

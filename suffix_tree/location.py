@@ -16,7 +16,7 @@ class Location:
     def __repr__(self):
         if self.on_node:
             return f"On Node: {self.node}"
-        elif self.node.isLeafEdge():
+        elif self.node.isLeafEdge:
             return f"On LeafEdge: {self.node}, offset {self.incomingEdgeOffset}"
         else:
             return f"On Internal Node: {self.node}, offset {self.incomingEdgeOffset}"

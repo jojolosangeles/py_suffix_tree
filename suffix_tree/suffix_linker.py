@@ -9,4 +9,5 @@ class SuffixLinker:
     def setLink(self, node):
         if self.nodeNeedingSuffixLink != None:
             self.nodeNeedingSuffixLink.sL = node.PK
+            self.nodeNeedingSuffixLink.hasSuffixLink = True
             self.nodeNeedingSuffixLink = None

@@ -17,9 +17,9 @@ builder.process_all_values()
 root_node = builder.root
 t2 = time.time()
 ptime("time to build tree", t1,t2)
-number_nodes = builder.node_factory.final_id()
+number_nodes = builder.node_factory.nextInternalId()
 leaf_count_visitor = LeafCountVisitor(number_nodes)
-depth_visitor = DepthVisitor()
+depth_visitor = DepthVisitor(len(data2))
 
 dfs = NodeDFS()
 t3 = time.time()

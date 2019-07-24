@@ -5,19 +5,22 @@ class Traverser:
 
     def canFollowValue(self, location, value):
         if location.on_node:
+            """Is there an outgoing edge from the node starting with that value?"""
             return self.nodeStore.hasEdge(location.node.PK, value)
-        elif location.node.isLeafEdge():
+        elif location.node.isLeafEdge:
+            """Does the location value match the value parameter?"""
             return self.dataSource[location.node.iESO + location.incomingEdgeOffset] == value
         else:
+            """Does the location value on internal edge match the value parameter?"""
             return location.node.iEVS[location.incomingEdgeOffset] == value
 
     def followValue(self, location, value):
         if location.on_node:
             edge = self.nodeStore.getEdge(location.node.PK, value)
-            location.node = edge if edge.isLeafEdge() else self.nodeStore.getNode(edge.tN)
-            location.on_node = location.node.isInternalNode() and len(location.node.iEVS) == 1
+            location.node = edge if edge.isLeafEdge else self.nodeStore.getNode(edge.tN)
+            location.on_node = location.node.isInternalNode and len(location.node.iEVS) == 1
             location.incomingEdgeOffset = 0 if location.on_node else 1
-        elif location.node.isInternalNode():
+        elif location.node.isInternalNode:
             location.incomingEdgeOffset += 1
             location.on_node = location.incomingEdgeOffset == len(location.node.iEVS)
         else:
@@ -26,24 +29,24 @@ class Traverser:
     def goToSuffix(self, location):
         # if we are on a node with suffix link, follow that link
         if location.on_node:
-            if location.node.hasSuffixLink():
+            if location.node.hasSuffixLink:
                 location.locateOnNode(self.nodeStore.getNode(location.node.sL))
             else:
                 downStr = location.node.iEVS
                 parentNode = self.nodeStore.getNode(location.node.parentPK)
-                if parentNode.isRoot():
+                if parentNode.isRoot:
                     downStr = downStr[1:]
                 parentNode = self.nodeStore.getNode(parentNode.sL)
                 location.locateOnNode(parentNode)
                 self.skipJumpDown(location, downStr)
         else:
-            if location.node.isLeafEdge():
+            if location.node.isLeafEdge:
                 iESO = location.node.iESO
                 downStr = self.dataSource[iESO:iESO + location.incomingEdgeOffset]
             else:
                 downStr = location.node.iEVS[:location.incomingEdgeOffset]
             node = self.nodeStore.getNode(location.node.PK)
-            if node.isRoot():
+            if node.isRoot:
                 downStr = downStr[1:]
             else:
                 node = self.nodeStore.getNode(node.sL)
@@ -55,7 +58,7 @@ class Traverser:
         if len(downStr) > 0:
             if location.on_node:
                 edge = self.nodeStore.getEdge(location.node.PK, downStr[0])
-                if edge.isLeafEdge():
+                if edge.isLeafEdge:
                     location.locateOnEdge(edge, len(downStr))
                 else:
                     internalNode = self.nodeStore.getNode(edge.tN)

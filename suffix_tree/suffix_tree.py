@@ -11,20 +11,31 @@ class SuffixTree:
         self.data_store = data_store
 
     def find_in_str(self, target_str, remaining_str):
+        """Return a list of locations where the target_str is found in a string."""
         return [m.start() for m in re.finditer(target_str, remaining_str)]
 
     def find(self, target_str):
+        """Returns a list of locations where the target_str is found in the sequence used to create the suffix tree."""
+        location,found_entire_target = self.locate(target_str)
+        if not found_entire_target:
+            return []
+        else:
+            suffix_collector = SuffixCollector()
+            nodeDFS = NodeDFS()
+            nodeDFS(suffix_collector, self.node_store, location.node)
+            return suffix_collector.suffixes
+
+    def locate(self, target_str):
+        """Returns the Location of the target_str in the SuffixTree, and True if the entire target_str is found"""
         location = Location()
         location.locateOnNode(self.root)
         traverser = Traverser(self.node_store, self.data_store)
-        suffix_collector = SuffixCollector()
         for value in target_str:
             if not traverser.canFollowValue(location, value):
-                return []
+                return location, False
             traverser.followValue(location, value)
+        return location, True
 
+    def apply(self, visitor):
         nodeDFS = NodeDFS()
-        nodeDFS(suffix_collector, self.node_store, location.node)
-        return suffix_collector.suffixes
-
-
+        nodeDFS(visitor, self.node_store, self.root)
